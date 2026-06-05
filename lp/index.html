@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRIPOS｜家族の移動を、まるごと設計する。</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand:    '#F97316',
+            branddark:'#EA6C0A',
+            navy:     '#1B3A6B',
+            navylight:'#2A5298',
+            teal:     '#2AB4A0',
+            tealdark: '#1E9B89',
+            cream:    '#FFFBF5',
+            sand:     '#FEF3E2',
+          },
+          fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .hero-bg { background: linear-gradient(150deg, #EBF4FF 0%, #F0F9F8 50%, #FEF3E2 100%); }
+    .fade-in { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity:1; transform:translateY(0); }
+    .card-hover { transition:transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(27,58,107,0.12); }
+    .score-bar { height:6px; border-radius:3px; background:#E5E7EB; overflow:hidden; }
+    .score-fill { height:100%; border-radius:3px; transition:width 1s ease; }
+    .moat-card { border-left: 4px solid; }
+  </style>
+</head>
+<body class="bg-white text-gray-800 antialiased">
+
+  <!-- Nav -->
+  <header class="fixed top-0 w-full bg-white/90 backdrop-blur border-b border-gray-100 z-50">
+    <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🧭</span>
+        <span class="font-black text-navy tracking-tight text-lg">TRIPOS</span>
+      </div>
+      <a href="#request" class="bg-navy text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-navylight transition-colors">
+        先行登録する
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero-bg pt-28 pb-16 px-5">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 bg-teal/10 text-teal text-xs font-bold px-4 py-2 rounded-full mb-6 tracking-widest uppercase">
+          🧭 AI 移動設計コンシェルジュ
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black text-navy leading-tight mb-4">
+          家族の移動を、<br />まるごと設計する。
+        </h1>
+        <p class="text-base md:text-xl text-gray-600 leading-relaxed mb-3">
+          出発から帰宅まで、AIが意思決定を全部引き受ける。<br />
+          中継宿・休憩・観光・持ち物まで、これひとつで。
+        </p>
+        <p class="text-sm text-teal font-bold mb-8">人気ランキングではなく、今のあなた家族に最適な「狙い目」を提示します。</p>
+        <a href="#request" class="inline-block bg-brand text-white font-bold text-base px-8 py-4 rounded-full hover:bg-branddark transition-colors shadow-lg shadow-orange-200 mb-10">
+          使ってみたい → 先行登録する
+        </a>
+      </div>
+
+      <!-- App Mock -->
+      <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-navy px-6 py-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-white font-black tracking-wide text-sm">🧭 TRIPOS</span>
+          </div>
+          <p class="text-white/90 font-bold text-base">宇都宮 → 大阪</p>
+          <p class="text-white/60 text-xs mt-1">2025/08/02（土）出発 ｜ 大人2人・子ども1人（3歳）｜ 車 ｜ 1泊 ｜ 予算3万円</p>
+        </div>
+
+        <!-- Score cards -->
+        <div class="p-5">
+          <p class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">✨ 今が狙い目エリア TOP3</p>
+          <div class="space-y-3 mb-5">
+
+            <!-- 1位 -->
+            <div class="bg-teal/5 border border-teal/20 rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="bg-teal text-white text-xs font-black px-2 py-1 rounded-full">1位</span>
+                  <span class="font-black text-gray-900">浜松エリア</span>
+                  <span class="text-xs bg-teal/10 text-teal px-2 py-0.5 rounded-full font-bold">あなたのリストにあります ⭐</span>
+                </div>
+                <span class="text-teal font-black text-lg">92点</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-2">
+                <div><span class="text-gray-400">子連れ</span> <span class="font-bold text-gray-700">◎</span></div>
+                <div><span class="text-gray-400">混雑</span> <span class="font-bold text-green-600">低め</span></div>
+                <div><span class="text-gray-400">価格</span> <span class="font-bold text-green-600">安定</span></div>
+              </div>
+              <p class="text-xs text-gray-500">中間地点でちょうどいい距離感。うなぎの産地で食事も◎。SNSの過熱も落ち着いており今が狙い目。</p>
+            </div>
+
+            <!-- 2位 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="bg-navy text-white text-xs font-black px-2 py-1 rounded-full">2位</span>
+                  <span class="font-black text-gray-900">彦根エリア</span>
+                </div>
+                <span class="text-navy font-black text-lg">85点</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-2">
+                <div><span class="text-gray-400">子連れ</span> <span class="font-bold text-gray-700">○</span></div>
+                <div><span class="text-gray-400">混雑</span> <span class="font-bold text-green-600">低め</span></div>
+                <div><span class="text-gray-400">価格</span> <span class="font-bold text-green-600">下落中</span></div>
+              </div>
+              <p class="text-xs text-gray-500">琵琶湖・ひこにゃん目的の家族に。宿泊費が先月比で下落中。穴場タイミング。</p>
+            </div>
+
+            <!-- 3位 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="bg-gray-400 text-white text-xs font-black px-2 py-1 rounded-full">3位</span>
+                  <span class="font-black text-gray-900">岡崎エリア</span>
+                  <span class="text-xs bg-orange-50 text-brand px-2 py-0.5 rounded-full font-bold">穴場</span>
+                </div>
+                <span class="text-gray-700 font-black text-lg">79点</span>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-2">
+                <div><span class="text-gray-400">子連れ</span> <span class="font-bold text-gray-700">○</span></div>
+                <div><span class="text-gray-400">混雑</span> <span class="font-bold text-green-600">空き多</span></div>
+                <div><span class="text-gray-400">価格</span> <span class="font-bold text-blue-600">割安</span></div>
+              </div>
+              <p class="text-xs text-gray-500">知名度は低いが宿数豊富。高速IC直近で移動負荷が少ない穴場エリア。</p>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <p class="text-xs text-gray-400">魅力度スコア = 人気度 ＋ 満足度 ＋ 子連れ適性 − 混雑度 − 価格高騰率</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使い方イメージ（チャッピーUI再現） -->
+  <section class="py-20 px-5 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <div class="fade-in text-center mb-10">
+        <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">How It Works</p>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">こう動きます</h2>
+        <p class="text-gray-500 mt-3 text-sm">出発地と目的地を入れると、AIがルートと宿泊プランを丸ごと設計</p>
+      </div>
+
+      <div class="fade-in max-w-xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <!-- App header -->
+        <div class="bg-navy px-5 py-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-white text-sm font-black tracking-wide">🧭 TRIPOS</span>
+            <span class="ml-auto text-white/50 text-xs">AI移動設計</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <div class="bg-white/10 text-white rounded-xl px-3 py-2 flex-1 text-center font-bold text-xs">📍 千葉県千葉市</div>
+            <span class="text-white/60 font-black">→</span>
+            <div class="bg-white/10 text-white rounded-xl px-3 py-2 flex-1 text-center font-bold text-xs">🏁 広島県広島市</div>
+          </div>
+          <div class="mt-2 flex gap-3 text-white/60 text-xs">
+            <span>2026/08/01（土）</span>
+            <span>大人2・子1（4歳）</span>
+            <span>🚗 車</span>
+            <span>1泊</span>
+          </div>
+        </div>
+
+        <!-- Plan tabs -->
+        <div class="flex border-b border-gray-100 bg-gray-50">
+          <button class="flex-1 py-3 text-xs font-black text-teal border-b-2 border-teal bg-white">プランA（推奨）</button>
+          <button class="flex-1 py-3 text-xs font-bold text-gray-400">プランB（温泉重視）</button>
+        </div>
+
+        <!-- Timeline -->
+        <div class="p-5">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">🗺️ 移動タイムライン</p>
+          <div class="relative">
+            <!-- line -->
+            <div class="absolute left-[22px] top-4 bottom-4 w-0.5 bg-gray-200"></div>
+
+            <div class="space-y-0">
+              <!-- 出発 -->
+              <div class="flex gap-4 items-start pb-5 relative">
+                <div class="w-11 h-11 rounded-full bg-teal text-white text-lg flex items-center justify-center z-10 shrink-0 shadow">🏠</div>
+                <div class="pt-1">
+                  <div class="flex items-center gap-2">
+                    <p class="font-black text-gray-900 text-sm">千葉市 出発</p>
+                    <span class="text-xs font-bold text-teal bg-teal/10 px-2 py-0.5 rounded-full">07:00</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">ETC割引あり ・ 渋滞予測：外環→圏央道 注意</p>
+                </div>
+              </div>
+
+              <!-- 海老名SA -->
+              <div class="flex gap-4 items-start pb-5 relative">
+                <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 text-lg flex items-center justify-center z-10 shrink-0 shadow">☕</div>
+                <div class="pt-1">
+                  <div class="flex items-center gap-2">
+                    <p class="font-black text-gray-900 text-sm">海老名SA</p>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">09:30</span>
+                    <span class="text-xs text-gray-400">休憩 30分</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">子連れ設備◎ ・ キッズスペースあり</p>
+                </div>
+              </div>
+
+              <!-- 浜松SA -->
+              <div class="flex gap-4 items-start pb-5 relative">
+                <div class="w-11 h-11 rounded-full bg-orange-100 text-brand text-lg flex items-center justify-center z-10 shrink-0 shadow">🍱</div>
+                <div class="pt-1">
+                  <div class="flex items-center gap-2">
+                    <p class="font-black text-gray-900 text-sm">浜松SA</p>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">12:30</span>
+                    <span class="text-xs text-gray-400">昼食 45分</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">うなぎ弁当が名物 ・ 授乳室あり</p>
+                </div>
+              </div>
+
+              <!-- 岡山宿泊 -->
+              <div class="flex gap-4 items-start pb-5 relative">
+                <div class="w-11 h-11 rounded-full bg-teal text-white text-lg flex items-center justify-center z-10 shrink-0 shadow ring-2 ring-teal ring-offset-2">🏨</div>
+                <div class="pt-1 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <p class="font-black text-gray-900 text-sm">岡山エリア 宿泊</p>
+                    <span class="text-xs font-bold text-teal bg-teal/10 px-2 py-0.5 rounded-full">16:30</span>
+                    <span class="text-xs bg-brand/10 text-brand font-bold px-2 py-0.5 rounded-full">★ 今が狙い目 92点</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">岡山城・後楽園に近い ・ 子連れ宿3件マッチ</p>
+                  <div class="mt-2 bg-teal/5 border border-teal/20 rounded-xl p-3">
+                    <p class="text-xs font-bold text-teal mb-1">あなたのリストから ⭐</p>
+                    <p class="text-xs text-gray-700">「ドーミーイン岡山」が15km圏内・空室あり・¥12,800〜</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 広島到着 -->
+              <div class="flex gap-4 items-start relative">
+                <div class="w-11 h-11 rounded-full bg-navy text-white text-lg flex items-center justify-center z-10 shrink-0 shadow">🏁</div>
+                <div class="pt-1">
+                  <div class="flex items-center gap-2">
+                    <p class="font-black text-gray-900 text-sm">広島 到着</p>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">翌 11:00</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">宮島・平和記念公園 周辺イベント2件あり</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats row -->
+          <div class="mt-5 grid grid-cols-2 gap-3">
+            <div class="bg-gray-50 rounded-2xl p-4">
+              <p class="text-xs text-gray-400 mb-1 font-bold">疲労度スコア</p>
+              <div class="flex items-end gap-2">
+                <p class="text-2xl font-black text-navy">62</p>
+                <p class="text-sm text-gray-400 pb-0.5">/100</p>
+              </div>
+              <div class="score-bar mt-2">
+                <div class="score-fill bg-gradient-to-r from-teal to-blue-400" style="width:62%"></div>
+              </div>
+              <p class="text-xs text-teal font-bold mt-1">子供に優しい行程</p>
+            </div>
+            <div class="bg-gray-50 rounded-2xl p-4">
+              <p class="text-xs text-gray-400 mb-1 font-bold">予算目安</p>
+              <p class="text-2xl font-black text-navy">¥42,600<span class="text-sm text-gray-400 font-normal">〜</span></p>
+              <p class="text-xs text-gray-400 mt-1">高速 ¥8,400 ＋ 宿 ¥12,800</p>
+              <p class="text-xs text-green-600 font-bold mt-1">先月比 −¥4,200 割安</p>
+            </div>
+          </div>
+
+          <!-- Feature icons -->
+          <div class="mt-4 grid grid-cols-6 gap-1 text-center">
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center text-base">🗺️</div>
+              <p class="text-[9px] text-gray-400 leading-tight">ルート<br/>最適化</p>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-base">🚦</div>
+              <p class="text-[9px] text-gray-400 leading-tight">渋滞<br/>回避</p>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center text-base">☕</div>
+              <p class="text-[9px] text-gray-400 leading-tight">SA<br/>情報</p>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-pink-50 rounded-xl flex items-center justify-center text-base">🧒</div>
+              <p class="text-[9px] text-gray-400 leading-tight">子連れ<br/>対応</p>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center text-base">🏨</div>
+              <p class="text-[9px] text-gray-400 leading-tight">宿泊<br/>提案</p>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-9 h-9 bg-yellow-50 rounded-xl flex items-center justify-center text-base">🎪</div>
+              <p class="text-[9px] text-gray-400 leading-tight">イベント<br/>情報</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 課題 -->
+  <section class="py-20 px-5 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <div class="fade-in text-center mb-12">
+        <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">Problem</p>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">こんな経験、ありませんか？</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="fade-in bg-blue-50 rounded-2xl p-6 border border-blue-100">
+          <div class="text-4xl mb-4">🔍</div>
+          <h3 class="font-bold text-navy mb-2">県を先に決めないと<br />検索できない</h3>
+          <p class="text-sm text-gray-500">「どこで泊まるか」わからないのに「どこで泊まりますか？」と聞かれる。</p>
+        </div>
+        <div class="fade-in bg-blue-50 rounded-2xl p-6 border border-blue-100">
+          <div class="text-4xl mb-4">📊</div>
+          <h3 class="font-bold text-navy mb-2">人気ランキングしか<br />出てこない</h3>
+          <p class="text-sm text-gray-500">混んでて高い有名スポットより、空いてて安くて満足度が高い場所を知りたい。</p>
+        </div>
+        <div class="fade-in bg-blue-50 rounded-2xl p-6 border border-blue-100">
+          <div class="text-4xl mb-4">🔁</div>
+          <h3 class="font-bold text-navy mb-2">毎回ゼロから<br />調べ直している</h3>
+          <p class="text-sm text-gray-500">年2回の帰省なのに、毎回同じことを考える。前回よかった宿も忘れている。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 独自スコア説明 -->
+  <section class="py-20 px-5 bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+      <div class="fade-in text-center mb-12">
+        <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">Score</p>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">「人気」ではなく<br />「今のあなたに合う」を探す</h2>
+        <p class="text-gray-500 mt-4">旅行好きほど知っている。半年前にバズって今落ち着いた場所が一番いい。<br />宿が取りやすく、値段が下がり、情報は出揃っている。</p>
+      </div>
+
+      <div class="fade-in bg-white rounded-2xl border border-gray-200 p-6 mb-8 shadow-sm">
+        <p class="text-sm font-black text-navy mb-4 text-center">TRIPOS 魅力度スコアの計算式</p>
+        <div class="flex flex-wrap justify-center items-center gap-2 text-sm">
+          <div class="bg-teal/10 text-teal font-bold px-3 py-2 rounded-lg">人気度</div>
+          <span class="text-gray-400 font-bold">＋</span>
+          <div class="bg-teal/10 text-teal font-bold px-3 py-2 rounded-lg">満足度</div>
+          <span class="text-gray-400 font-bold">＋</span>
+          <div class="bg-blue-50 text-navy font-bold px-3 py-2 rounded-lg">子連れ適性</div>
+          <span class="text-gray-400 font-bold">−</span>
+          <div class="bg-red-50 text-red-500 font-bold px-3 py-2 rounded-lg">混雑度</div>
+          <span class="text-gray-400 font-bold">−</span>
+          <div class="bg-red-50 text-red-500 font-bold px-3 py-2 rounded-lg">価格高騰率</div>
+        </div>
+      </div>
+
+      <div class="fade-in grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-gray-200 text-center shadow-sm">
+          <div class="text-3xl mb-3">🏖️</div>
+          <p class="font-bold text-gray-900 mb-1">熱海</p>
+          <div class="space-y-1 text-xs text-gray-500 mb-3">
+            <div class="flex justify-between"><span>人気度</span><span class="font-bold text-gray-700">95</span></div>
+            <div class="flex justify-between"><span>混雑度</span><span class="font-bold text-red-500">−95</span></div>
+            <div class="flex justify-between"><span>価格高騰率</span><span class="font-bold text-red-500">−90</span></div>
+          </div>
+          <div class="bg-red-50 rounded-xl py-2">
+            <p class="text-xs text-red-500 font-bold">総合 60点</p>
+            <p class="text-xs text-gray-400">今は避けた方が無難</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-gray-200 text-center shadow-sm">
+          <div class="text-3xl mb-3">♨️</div>
+          <p class="font-bold text-gray-900 mb-1">草津温泉</p>
+          <div class="space-y-1 text-xs text-gray-500 mb-3">
+            <div class="flex justify-between"><span>人気度</span><span class="font-bold text-gray-700">80</span></div>
+            <div class="flex justify-between"><span>混雑度</span><span class="font-bold text-green-600">−50</span></div>
+            <div class="flex justify-between"><span>価格高騰率</span><span class="font-bold text-green-600">−60</span></div>
+          </div>
+          <div class="bg-teal/10 rounded-xl py-2">
+            <p class="text-xs text-teal font-bold">総合 85点</p>
+            <p class="text-xs text-gray-400">バランス良好</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-teal/30 text-center shadow-sm">
+          <div class="text-3xl mb-3">🐟</div>
+          <p class="font-bold text-gray-900 mb-1">浜松</p>
+          <div class="space-y-1 text-xs text-gray-500 mb-3">
+            <div class="flex justify-between"><span>人気度</span><span class="font-bold text-gray-700">70</span></div>
+            <div class="flex justify-between"><span>混雑度</span><span class="font-bold text-green-600">−30</span></div>
+            <div class="flex justify-between"><span>価格高騰率</span><span class="font-bold text-green-600">−40</span></div>
+          </div>
+          <div class="bg-teal rounded-xl py-2">
+            <p class="text-xs text-white font-bold">総合 90点 👑</p>
+            <p class="text-xs text-white/70">今が狙い目</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 機能3つ -->
+  <section class="py-20 px-5 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <div class="fade-in text-center mb-12">
+        <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">Features</p>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">TRIPOSの3つのコア機能</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
+          <div class="text-4xl mb-5">🗺️</div>
+          <h3 class="font-bold text-navy text-lg mb-3">ルート逆算<br />エリア提案</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">出発地×目的地から宿泊エリアをAIが逆算。疲労・距離・子供負担・今の魅力度スコアで最適な中継地を提示。</p>
+        </div>
+        <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
+          <div class="text-4xl mb-5">⭐</div>
+          <h3 class="font-bold text-navy text-lg mb-3">行きたい宿<br />リスト</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">YouTubeで見た宿、気になったホテルをリストに保存。次の旅行でルート上にあれば自動で優先提案。旅の記憶が財産になる。</p>
+        </div>
+        <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
+          <div class="text-4xl mb-5">📈</div>
+          <h3 class="font-bold text-navy text-lg mb-3">使うほど<br />賢くなる</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">旅行履歴・好み・子供の成長を記録。「前回姫路宿泊の満足度が高かった」をAIが学習して次回に活かす。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 堀・差別化 -->
+  <section class="py-20 px-5 bg-gray-50">
+    <div class="max-w-3xl mx-auto">
+      <div class="fade-in text-center mb-12">
+        <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">Why TRIPOS</p>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">じゃらん・楽天と<br />何が違うのか</h2>
+      </div>
+      <div class="space-y-4 fade-in">
+        <div class="moat-card border-teal bg-white rounded-2xl p-6 shadow-sm">
+          <div class="flex gap-4 items-start">
+            <span class="text-3xl">🎯</span>
+            <div>
+              <p class="font-black text-navy mb-1">最適化の目的が違う</p>
+              <p class="text-sm text-gray-600">大手OTAは「予約数を最大化」するため人気スポットを前面に出す。TRIPOSは「あなたの旅満足度を最大化」するため、空いていて割安で子連れに合う場所を探す。</p>
+            </div>
+          </div>
+        </div>
+        <div class="moat-card border-brand bg-white rounded-2xl p-6 shadow-sm">
+          <div class="flex gap-4 items-start">
+            <span class="text-3xl">🧒</span>
+            <div>
+              <p class="font-black text-navy mb-1">子供の成長を覚えている</p>
+              <p class="text-sm text-gray-600">2歳・4歳・7歳では最適な旅が違う。TRIPOSはあなたの家族の成長記録をもとに提案を進化させる。これは大手には絶対に真似できないパーソナライズ。</p>
+            </div>
+          </div>
+        </div>
+        <div class="moat-card border-navy bg-white rounded-2xl p-6 shadow-sm">
+          <div class="flex gap-4 items-start">
+            <span class="text-3xl">⭐</span>
+            <div>
+              <p class="font-black text-navy mb-1">使うほど乗り換えられなくなる</p>
+              <p class="text-sm text-gray-600">行きたいリスト・旅行履歴・学習済みの好み。3年分のデータが蓄積されると「他のアプリには移れない」状態になる。旅の記憶がそのままTRIPOSに残る。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 感情訴求 -->
+  <section class="py-20 px-5 bg-navy text-white text-center">
+    <div class="max-w-xl mx-auto fade-in">
+      <div class="text-5xl mb-6">👨‍👩‍👧</div>
+      <h2 class="text-3xl md:text-4xl font-black leading-tight mb-4">
+        家族との時間を、<br />もっと笑顔に。
+      </h2>
+      <p class="text-white/70 leading-relaxed mb-8">
+        計画に追われる旅行ではなく、<br />
+        家族と話せる旅行へ。<br />
+        TRIPOSが、移動の「考える手間」を全部引き受けます。
+      </p>
+      <a href="#request" class="inline-block bg-brand text-white font-bold text-base px-8 py-4 rounded-full hover:bg-branddark transition-colors shadow-lg">
+        先行登録して試してみる →
+      </a>
+    </div>
+  </section>
+
+  <!-- 先行登録 -->
+  <section id="request" class="py-24 px-5 bg-gray-50">
+    <div class="max-w-lg mx-auto">
+      <div class="fade-in bg-white border border-gray-200 rounded-3xl p-8 md:p-10 shadow-xl">
+        <div class="text-center mb-8">
+          <span class="text-4xl block mb-4">✋</span>
+          <h2 class="text-2xl font-black text-navy mb-2">先行登録 / 使ってみたい！<br />を教えてください</h2>
+          <p class="text-sm text-gray-500">ご登録いただいた方にリリース時に優先でご案内します。</p>
+        </div>
+        <form id="requestForm" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">よく使う出発地 <span class="text-brand">*</span></label>
+            <input type="text" placeholder="例：宇都宮、千葉、東京" required
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">よく使う目的地 <span class="text-brand">*</span></label>
+            <input type="text" placeholder="例：大阪、広島、福岡" required
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">子供の年齢 <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
+            <input type="text" placeholder="例：3歳・6歳"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">メールアドレス <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
+            <input type="email" placeholder="example@email.com"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">一言コメント <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
+            <textarea rows="3" placeholder="こんな機能が欲しい、こういう旅で困っている、など何でも"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-navy text-white font-bold text-base py-4 rounded-xl hover:bg-navylight transition-colors shadow-lg">
+            登録する 🎉
+          </button>
+        </form>
+        <div id="thankYou" class="hidden text-center py-8">
+          <div class="text-5xl mb-4">🎊</div>
+          <h3 class="text-xl font-black text-navy mb-2">ありがとうございます！</h3>
+          <p class="text-sm text-gray-500">リリース時に優先でご連絡します。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-navy text-white/50 py-10 px-5 text-center text-sm">
+    <div class="flex items-center justify-center gap-2 mb-3">
+      <span class="text-xl">🧭</span>
+      <span class="text-white font-black tracking-wide">TRIPOS</span>
+    </div>
+    <p class="text-white/70">家族の移動を、まるごと設計する。</p>
+    <p class="mt-4 text-xs text-white/30">© 2026 TRIPOS. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById('requestForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.classList.add('hidden');
+      document.getElementById('thankYou').classList.remove('hidden');
+    });
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
