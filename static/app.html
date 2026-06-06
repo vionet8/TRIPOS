@@ -121,8 +121,23 @@
           <!-- 帰省モード時のみ：目的地 + 往復設定 -->
           <div id="destinationRow" class="hidden">
             <label class="block text-xs font-bold text-gray-600 mb-1">🏁 目的地（帰省先） <span class="text-brand">*</span></label>
-            <input id="destination" type="text" placeholder="例：大阪、広島、福岡"
-              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal mb-3" />
+            <input id="destination" type="text" placeholder="例：大阪、広島、福岡（旦那実家など）"
+              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal mb-2" />
+
+            <!-- 2つ目の目的地 -->
+            <div id="destination2Row" class="hidden mb-3">
+              <label class="block text-xs font-bold text-gray-600 mb-1">🏁 2つ目の目的地（妻実家など）</label>
+              <div class="flex gap-2">
+                <input id="destination2" type="text" placeholder="例：名古屋、京都"
+                  class="flex-1 border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+                <button type="button" onclick="document.getElementById('destination2Row').classList.add('hidden'); document.getElementById('addDest2Btn').classList.remove('hidden');"
+                  class="text-gray-400 hover:text-red-400 px-2 text-lg">✕</button>
+              </div>
+            </div>
+            <button type="button" id="addDest2Btn" onclick="document.getElementById('destination2Row').classList.remove('hidden'); this.classList.add('hidden');"
+              class="text-xs text-teal font-bold mb-3 hover:text-tealdark transition-colors">
+              ＋ 目的地を追加（妻実家など2か所経由）
+            </button>
 
             <!-- 往復トグル -->
             <div class="bg-navy/5 rounded-2xl p-4 space-y-3">
@@ -203,6 +218,14 @@
                 <option value="1">1泊2日</option>
                 <option value="2">2泊3日</option>
                 <option value="3">3泊4日</option>
+                <option value="4">4泊5日</option>
+                <option value="5">5泊6日</option>
+                <option value="6">6泊7日</option>
+                <option value="7">7泊8日</option>
+                <option value="8">8泊9日</option>
+                <option value="9">9泊10日</option>
+                <option value="10">10泊11日</option>
+                <option value="14">14泊15日</option>
               </select>
             </div>
           </div>
@@ -509,6 +532,7 @@
           body: JSON.stringify({
             origin,
             destination: document.getElementById('destination').value.trim(),
+            destination2: document.getElementById('destination2')?.value.trim() || '',
             direction: document.getElementById('direction').value.trim(),
             purpose, travel_date, nights, adults, children, budget,
             mode: document.getElementById('mode').value || 'normal',
@@ -522,7 +546,10 @@
           })
         });
 
-        if (!res.ok) throw new Error(`サーバーエラー: ${res.status}`);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `サーバーエラー: ${res.status}`);
+        }
         const data = await res.json();
 
         // ルートサマリー

@@ -38,7 +38,8 @@ def get_all_areas():
 
 class RecommendRequest(BaseModel):
     origin: str           # 出発地（例：宇都宮）
-    destination: str = "" # 目的地（帰省モードのみ必須）
+    destination: str = ""  # 目的地（帰省モードのみ必須）
+    destination2: str = "" # 2つ目の目的地（妻実家など）
     direction: str = ""   # 方面の希望（観光モード・任意）
     purpose: str          # 旅の目的（観光/グルメ/温泉/レジャー/帰省）
     travel_date: str      # 出発日（例：2026-08-02）
@@ -98,8 +99,14 @@ async def recommend(req: RecommendRequest):
 
     mode_note = ""
     if req.mode == "kisei":
-        round_note = "【往復モード】行き（出発地→目的地の中間）と帰り（目的地→出発地の中間、別ルート推奨）の両方を提案すること。" if req.round_trip else ""
-        mode_note = f"※帰省・長距離モード：出発地〜目的地の中間地点として距離的に適切なエリアを提案すること。中間地点での滞在目的は「{req.purpose}」なので、それに合ったエリアを選ぶ。{round_note}"
+        dest2_note = f"→さらに「{req.destination2}」も経由する（2か所目の帰省先）。" if req.destination2 else ""
+        round_note = ""
+        if req.round_trip:
+            round_note = (
+                "【往復モード】行き（出発地→目的地の中間）と帰り（目的地→出発地の中間）の両方を提案すること。"
+                "帰りの提案(return_areas)は行きで漏れた良エリアを優先的に使い、なるべく別ルートを推奨すること。"
+            )
+        mode_note = f"※帰省・長距離モード：出発地〜目的地の中間地点として距離的に適切なエリアを提案。{dest2_note}中間地点での滞在目的は「{req.purpose}」に合うエリアを選ぶ。{round_note}"
     else:
         dest_note = f"方面の希望：{req.direction}" if req.direction else "方面の希望：特になし（AIが最適なエリアを自由に提案）"
         mode_note = f"※観光旅行モード：目的地は決まっていない。出発地から車で現実的に行ける範囲で、旅の目的・同行者に最もマッチするエリアをAIが提案すること。{dest_note}"
@@ -120,7 +127,7 @@ async def recommend(req: RecommendRequest):
 
 ## 旅行条件
 - 出発地：{req.origin}
-- 目的地：{req.destination if req.destination else "未定（AIが提案）"}
+- 目的地：{req.destination if req.destination else "未定（AIが提案）"}{f" → さらに{req.destination2}" if req.destination2 else ""}
 - 旅の目的：{req.purpose}
 - 出発日：{req.travel_date}
 - 同行者：{group_note}
@@ -132,8 +139,8 @@ async def recommend(req: RecommendRequest):
 {family_note}
 {cost_note if req.mode == "kisei" else ""}
 
-## エリアデータベース（125エリア）
-{json.dumps(areas_summary, ensure_ascii=False, indent=None)}
+## エリアデータベース（抜粋・ルート関連エリア優先）
+{json.dumps(areas_summary[:60], ensure_ascii=False, indent=None)}
 
 ## 指示
 1. 出発地→目的地のルートを地理的に考慮し、中継地として現実的なエリアを選ぶ
