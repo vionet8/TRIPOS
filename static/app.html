@@ -343,16 +343,18 @@
       const destInput = document.getElementById('destination');
 
       if (isKisei) {
-        // 帰省モード：目的地入力あり・方面なし・目的選択グレーアウト
+        // 帰省モード：目的地入力あり・方面なし・滞在目的は選択必須
         destRow.classList.remove('hidden');
         dirRow.classList.add('hidden');
         destInput.setAttribute('required','');
-        ps.style.opacity = '0.4';
-        ps.style.pointerEvents = 'none';
-        document.getElementById('purpose').value = '帰省';
-        document.getElementById('purpose').removeAttribute('required');
+        ps.style.opacity = '1';
+        ps.style.pointerEvents = '';
+        document.getElementById('purpose').value = selectedPurpose || '';
+        document.getElementById('purpose').setAttribute('required','');
+        // ラベルを帰省向けに変更
+        ps.querySelector('label').textContent = '🎯 中間地点での滞在目的 *';
       } else {
-        // 観光モード：目的地なし・方面あり・目的選択必須
+        // 観光モード：目的地なし・方面あり・旅の目的必須
         destRow.classList.add('hidden');
         dirRow.classList.remove('hidden');
         destInput.removeAttribute('required');
@@ -361,6 +363,7 @@
         ps.style.pointerEvents = '';
         document.getElementById('purpose').value = selectedPurpose || '';
         document.getElementById('purpose').setAttribute('required','');
+        ps.querySelector('label').textContent = '🎯 旅の目的 *';
       }
     }
 

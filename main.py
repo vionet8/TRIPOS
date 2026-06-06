@@ -95,7 +95,7 @@ async def recommend(req: RecommendRequest):
 
     mode_note = ""
     if req.mode == "kisei":
-        mode_note = "※帰省・長距離モード：観光目的ではなく移動効率重視。出発地〜目的地の距離を考慮し、中間地点として適切なエリアを優先すること。疲れを取れる宿が多いエリアを重視。"
+        mode_note = f"※帰省・長距離モード：出発地〜目的地の中間地点として距離的に適切なエリアを提案すること。中間地点での滞在目的は「{req.purpose}」なので、それに合ったエリアを選ぶ。"
     else:
         dest_note = f"方面の希望：{req.direction}" if req.direction else "方面の希望：特になし（AIが最適なエリアを自由に提案）"
         mode_note = f"※観光旅行モード：目的地は決まっていない。出発地から車で現実的に行ける範囲で、旅の目的・同行者に最もマッチするエリアをAIが提案すること。{dest_note}"
