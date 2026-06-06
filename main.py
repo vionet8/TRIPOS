@@ -40,53 +40,137 @@ def get_all_areas():
     return areas
 
 
-# 地名→リージョンIDのマッピング
-REGION_KEYWORDS = {
-    "north": ["北海道","青森","岩手","宮城","秋田","山形","福島","仙台","札幌","函館","盛岡","山形","福島","郡山","旭川"],
-    "east":  ["東京","神奈川","埼玉","千葉","茨城","栃木","群馬","山梨","長野","新潟","静岡","愛知","岐阜","三重",
-              "宇都宮","横浜","川崎","さいたま","千葉","水戸","前橋","高崎","甲府","長野","新潟","静岡","名古屋","岐阜","津"],
-    "west":  ["大阪","京都","兵庫","奈良","滋賀","和歌山","鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知",
-              "大阪","京都","神戸","奈良","大津","和歌山","鳥取","松江","岡山","広島","山口","徳島","高松","松山","高知"],
-    "south": ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄","北九州","博多","長崎","熊本","大分","宮崎","鹿児島","那覇"],
+# ── サブリージョン定義（ルート順）──────────────────────
+# 日本を10のサブリージョンに分割し、地理的な順序を定義
+SUBREGIIONS_ORDER = [
+    "hokkaido",   # 北海道
+    "tohoku",     # 東北
+    "kanto",      # 関東
+    "koshinetsu", # 甲信越
+    "tokai",      # 東海
+    "kinki",      # 関西・近畿
+    "chugoku",    # 中国
+    "shikoku",    # 四国
+    "kyushu",     # 九州
+    "okinawa",    # 沖縄
+]
+
+# 都市・県名 → サブリージョンID
+PLACE_TO_SUBREGION = {
+    # 北海道
+    "hokkaido": ["北海道","札幌","函館","旭川","帯広","釧路","小樽","登別","洞爺","ニセコ","富良野","知床"],
+    # 東北
+    "tohoku": ["青森","岩手","宮城","秋田","山形","福島","仙台","盛岡","青森","秋田","山形","福島","郡山","いわき"],
+    # 関東
+    "kanto": ["東京","神奈川","埼玉","千葉","茨城","栃木","群馬","宇都宮","横浜","川崎","さいたま","水戸","前橋","高崎","那須","日光","鎌倉","箱根"],
+    # 甲信越
+    "koshinetsu": ["山梨","長野","新潟","甲府","松本","長野","上田","軽井沢","諏訪","清里","白馬","妙高","越後湯沢","湯沢"],
+    # 東海
+    "tokai": ["静岡","愛知","岐阜","三重","浜松","静岡","名古屋","岐阜","津","伊勢","下呂","飛騨","高山","熱海","伊豆"],
+    # 関西・近畿
+    "kinki": ["大阪","京都","兵庫","奈良","滋賀","和歌山","神戸","奈良","大津","和歌山","白浜","有馬","城崎","天橋立"],
+    # 中国
+    "chugoku": ["鳥取","島根","岡山","広島","山口","鳥取","松江","岡山","広島","下関","宮島"],
+    # 四国
+    "shikoku": ["徳島","香川","愛媛","高知","徳島","高松","松山","高知","道後"],
+    # 九州
+    "kyushu": ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","博多","北九州","長崎","熊本","別府","由布院","宮崎","鹿児島"],
+    # 沖縄
+    "okinawa": ["沖縄","那覇","石垣","宮古","沖縄本島"],
 }
 
-def detect_region(place: str) -> list[str]:
-    """地名からリージョンIDリストを返す"""
-    matched = []
-    for region_id, keywords in REGION_KEYWORDS.items():
+def detect_subregion(place: str) -> str | None:
+    """地名からサブリージョンIDを返す"""
+    for sub_id, keywords in PLACE_TO_SUBREGION.items():
         if any(kw in place for kw in keywords):
-            matched.append(region_id)
-    return matched if matched else list(REGION_KEYWORDS.keys())  # 不明なら全リージョン
+            return sub_id
+    return None
 
-def get_route_region_ids(origin: str, destination: str) -> list[str]:
-    """出発地と目的地の間のリージョンIDを返す（中間リージョンも含む）"""
-    order = ["north", "east", "west", "south"]
-    origin_regions = detect_region(origin)
-    dest_regions = detect_region(destination) if destination else origin_regions
+# 都道府県・エリア名 → サブリージョンIDのマッピング（areas_dbのprefectureから判定）
+PREFECTURE_TO_SUBREGION = {
+    "北海道": "hokkaido",
+    "青森県": "tohoku", "岩手県": "tohoku", "宮城県": "tohoku",
+    "秋田県": "tohoku", "山形県": "tohoku", "福島県": "tohoku",
+    "東京都": "kanto", "神奈川県": "kanto", "埼玉県": "kanto",
+    "千葉県": "kanto", "茨城県": "kanto", "栃木県": "kanto", "群馬県": "kanto",
+    "山梨県": "koshinetsu", "長野県": "koshinetsu", "新潟県": "koshinetsu",
+    "静岡県": "tokai", "愛知県": "tokai", "岐阜県": "tokai", "三重県": "tokai",
+    "大阪府": "kinki", "京都府": "kinki", "兵庫県": "kinki",
+    "奈良県": "kinki", "滋賀県": "kinki", "和歌山県": "kinki",
+    "鳥取県": "chugoku", "島根県": "chugoku", "岡山県": "chugoku",
+    "広島県": "chugoku", "山口県": "chugoku",
+    "徳島県": "shikoku", "香川県": "shikoku", "愛媛県": "shikoku", "高知県": "shikoku",
+    "福岡県": "kyushu", "佐賀県": "kyushu", "長崎県": "kyushu",
+    "熊本県": "kyushu", "大分県": "kyushu", "宮崎県": "kyushu", "鹿児島県": "kyushu",
+    "沖縄県": "okinawa",
+}
 
-    # 全リージョンIDのインデックス範囲を取得
-    all_indices = set()
-    for r in origin_regions + dest_regions:
-        if r in order:
-            all_indices.add(order.index(r))
+def get_area_subregion(area: dict) -> str:
+    """エリアの都道府県からサブリージョンIDを返す"""
+    pref = area.get("prefecture", "")
+    # 「県」「府」「都」「道」を付けて検索
+    for suffix in ["", "県", "府", "都", "道"]:
+        if pref + suffix in PREFECTURE_TO_SUBREGION:
+            return PREFECTURE_TO_SUBREGION[pref + suffix]
+    # 前方一致で検索
+    for k, v in PREFECTURE_TO_SUBREGION.items():
+        if k.startswith(pref) or pref.startswith(k[:2]):
+            return v
+    return "kanto"  # デフォルト
 
-    if not all_indices:
-        return order  # フォールバック
 
-    min_idx = min(all_indices)
-    max_idx = max(all_indices)
-    # 出発〜目的地の間のリージョンをすべて含める
-    return [order[i] for i in range(min_idx, max_idx + 1)]
+def get_intermediate_subregions(origin: str, destination: str, mode: str = "normal") -> list[str]:
+    """
+    出発地〜目的地の中間サブリージョンを返す。
+    帰省モード: 出発地・目的地を除いた中間のみ
+    観光モード: 出発地周辺 + 少し遠め（目的地なし）
+    """
+    origin_sub = detect_subregion(origin) or "kanto"
+
+    if mode == "kisei" and destination:
+        dest_sub = detect_subregion(destination) or "kinki"
+        o_idx = SUBREGIIONS_ORDER.index(origin_sub) if origin_sub in SUBREGIIONS_ORDER else 2
+        d_idx = SUBREGIIONS_ORDER.index(dest_sub) if dest_sub in SUBREGIIONS_ORDER else 5
+
+        if o_idx == d_idx:
+            # 同じリージョン内は隣接も含める
+            start, end = max(0, o_idx - 1), min(len(SUBREGIIONS_ORDER) - 1, o_idx + 1)
+        else:
+            # 中間のみ（出発地と目的地は除外）
+            lo, hi = min(o_idx, d_idx), max(o_idx, d_idx)
+            start, end = lo + 1, hi - 1  # 両端を除外
+
+        if start > end:
+            # 中間がない場合（隣接）は両方含める
+            start, end = min(o_idx, d_idx), max(o_idx, d_idx)
+
+        return SUBREGIIONS_ORDER[start:end + 1]
+    else:
+        # 観光モード：出発地から車で2〜3時間圏内（出発地±2サブリージョン）
+        o_idx = SUBREGIIONS_ORDER.index(origin_sub) if origin_sub in SUBREGIIONS_ORDER else 2
+        start = max(0, o_idx - 1)
+        end = min(len(SUBREGIIONS_ORDER) - 1, o_idx + 2)
+        return SUBREGIIONS_ORDER[start:end + 1]
 
 
-def get_filtered_areas(origin: str, destination: str, max_areas: int = 20) -> list:
-    """ルートに関連するエリアだけ返す（最大max_areas件）"""
-    relevant_regions = get_route_region_ids(origin, destination)
+def get_filtered_areas(origin: str, destination: str, mode: str = "normal", max_areas: int = 20) -> list:
+    """ルートの中間エリアに絞り込んで返す"""
+    target_subs = get_intermediate_subregions(origin, destination, mode)
     all_areas = get_all_areas()
-    filtered = [a for a in all_areas if a.get("region_id") in relevant_regions]
-    # 関連リージョンが少なすぎる場合は隣接リージョンも追加
-    if len(filtered) < 10:
+
+    # エリアにサブリージョンを付与して絞り込み
+    filtered = []
+    for a in all_areas:
+        sub = get_area_subregion(a)
+        if sub in target_subs:
+            a = dict(a)
+            a["subregion"] = sub
+            filtered.append(a)
+
+    # 足りない場合はリージョン拡張
+    if len(filtered) < 8:
         filtered = all_areas
+
     return filtered[:max_areas]
 
 
@@ -180,9 +264,9 @@ async def recommend(req: RecommendRequest):
 async def _recommend_inner(req: RecommendRequest):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-    # 出発地・目的地でルート関連エリアに絞り込む（タイムアウト対策）
+    # 出発地・目的地でルート中間エリアに絞り込む
     dest_for_filter = req.destination if req.destination else req.direction
-    route_areas = get_filtered_areas(req.origin, dest_for_filter, max_areas=20)
+    route_areas = get_filtered_areas(req.origin, dest_for_filter, mode=req.mode, max_areas=20)
 
     # エリアデータを簡潔な形式でプロンプトに渡す
     areas_summary = []
