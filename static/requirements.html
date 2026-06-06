@@ -109,26 +109,53 @@
 
     <!-- 4. スコア設計 -->
     <section id="score">
-      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">4. 魅力度スコア設計</h2>
-      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">4. 魅力度スコア設計とデータ更新戦略</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-5">
         <div class="bg-navy/5 rounded-xl p-4 text-center font-bold text-navy">
           魅力度スコア = 人気度 + 満足度 + 子連れ適性 − 混雑度 − 価格高騰率
         </div>
         <table class="w-full text-sm">
           <thead><tr class="border-b border-gray-100">
             <th class="text-left py-2 text-gray-500 font-bold">要素</th>
-            <th class="text-left py-2 text-gray-500 font-bold">データソース</th>
+            <th class="text-left py-2 text-gray-500 font-bold">データソース（将来）</th>
             <th class="text-left py-2 text-gray-500 font-bold">現状</th>
           </tr></thead>
           <tbody class="divide-y divide-gray-100">
-            <tr><td class="py-2 font-bold">人気度</td><td class="py-2 text-gray-600">Googleトレンド・SNSメンション数（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
-            <tr><td class="py-2 font-bold">満足度</td><td class="py-2 text-gray-600">楽天トラベル評価・じゃらん口コミ（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">人気度</td><td class="py-2 text-gray-600">YouTube動画投稿数・X投稿数</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">満足度</td><td class="py-2 text-gray-600">楽天トラベル・じゃらん口コミ評価</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
             <tr><td class="py-2 font-bold">子連れ適性</td><td class="py-2 text-gray-600">静的DB（family_score）× 子供年齢</td><td class="py-2 text-teal font-bold">実装済み</td></tr>
-            <tr><td class="py-2 font-bold">混雑度</td><td class="py-2 text-gray-600">Googleマップ混雑データ・SNSトレンド（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
-            <tr><td class="py-2 font-bold">価格高騰率</td><td class="py-2 text-gray-600">楽天トラベルAPI・じゃらんAPI（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">混雑度</td><td class="py-2 text-gray-600">イベントカレンダー・GW/夏休み定義</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">価格高騰率</td><td class="py-2 text-gray-600">楽天トラベルAPI・じゃらんAPI</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
           </tbody>
         </table>
-        <p class="text-xs text-gray-400">※β版では全要素をClaude APIが推定。Phase1以降で実データに順次切り替え予定。</p>
+        <div class="border-t border-gray-100 pt-4">
+          <p class="font-black text-navy text-sm mb-3">📋 スコア更新の設計方針</p>
+          <div class="space-y-3 text-sm">
+            <div class="bg-gray-50 rounded-xl p-3">
+              <p class="font-bold text-navy mb-1">① ユーザーに明示的な評価は求めない</p>
+              <p class="text-gray-600 text-xs">旅行後アンケートは回収率が低く信頼性も低い。行動シグナルで代替する：<br/>
+              ・<strong>リピート利用</strong>＝提案が「許容範囲」→ エリア信頼スコア加算<br/>
+              ・<strong>wishlist追加数</strong>＝潜在関心度<br/>
+              ・<strong>提案の何位を選択したか</strong>＝スコア順位の妥当性チェック</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+              <p class="font-bold text-navy mb-1">② 外部データで定期的に自動更新</p>
+              <p class="text-gray-600 text-xs">
+              ・<strong>価格：</strong>じゃらん/楽天APIで月次取得 → price_range自動更新<br/>
+              ・<strong>注目度：</strong>YouTube動画数を定期クロール → popularityスコア更新<br/>
+              ・<strong>イベント：</strong>地域カレンダーベースにbest_season・混雑フラグ更新</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+              <p class="font-bold text-navy mb-1">③ AIに渡すのは絞り込み済み上位候補のみ（RAG的設計）</p>
+              <p class="text-gray-600 text-xs">全エリアをコンテキストに入れると見落としが起きる。地理・季節・子供年齢でDBを事前フィルタリングし、<strong>上位10〜15件だけをClaudeに渡す。</strong>AIの役割は「検索」ではなく「判断と説明」に限定する。</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+              <p class="font-bold text-navy mb-1">④ 管理者による手動更新で補完</p>
+              <p class="text-gray-600 text-xs">新施設・廃業・ローカルイベントなど自動化が追いつかない情報は管理画面から直接編集。完全自動化は目指さず、人の目が入る設計を維持する。</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-400">※β版では全要素をClaude APIが推定。Phase1以降で外部データに順次切り替え予定。</p>
       </div>
     </section>
 
