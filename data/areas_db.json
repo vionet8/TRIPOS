@@ -2,7 +2,7 @@
   "meta": {
     "version": "3.0.0",
     "updated": "2026-06-05",
-    "total_areas": 125,
+    "total_areas": 140,
     "price_note": "価格帯は相対比較用。実予約時は動的取得で最新価格を確認。",
     "price_index": { "budget":"〜8000円/人", "mid":"8000〜15000円/人", "premium":"15000〜25000円/人", "luxury":"25000円〜/人" },
     "types": ["主要都市","温泉地","リゾート地","高速IC周辺"]
@@ -422,7 +422,35 @@
           "family_score":{"infant":68,"toddler":75,"elementary":83},
           "best_season":["通年","冬（御神渡り）"],"tags":["湖","温泉","花火","IC近い"],
           "attractions":["諏訪湖（花火）","諏訪大社","高島城","片倉館"],
-          "food":["うなぎ","寒天料理","諏訪みそ"] }
+          "food":["うなぎ","寒天料理","諏訪みそ"] },
+
+        { "id":"kiyosato","name":"清里・八ヶ岳","prefecture":"山梨県/長野県","type":["リゾート地"],
+          "highway":"中央道・長坂IC","price_range":"mid","hotel_price_avg":"9000-20000",
+          "family_score":{"infant":70,"toddler":78,"elementary":88},
+          "best_season":["5-10月（高原）","12-3月（スキー）"],"tags":["高原","牧場","富士山ビュー","アウトドア","中央道◎"],
+          "attractions":["萌木の村（アスレチック・メリーゴーラウンド）","八ヶ岳倶楽部","清里テラス（絶景）","まきば公園（羊）"],
+          "food":["高原野菜","清里ソフトクリーム","ジャム","八ヶ岳産チーズ"] },
+
+        { "id":"tateshina","name":"茅野・蓼科","prefecture":"長野県","type":["リゾート地","温泉地"],
+          "highway":"中央道・諏訪南IC / 茅野IC","price_range":"mid","hotel_price_avg":"10000-22000",
+          "family_score":{"infant":70,"toddler":78,"elementary":86},
+          "best_season":["5-10月","12-3月（スキー）"],"tags":["高原","湖","温泉","別荘地","諏訪隣接"],
+          "attractions":["蓼科湖","白樺湖","女神湖","横谷峡（4つの滝）","蓼科牧場"],
+          "food":["信州そば","山賊焼き","高原野菜","蓼科産牛乳"] },
+
+        { "id":"kisoji","name":"木曽路（妻籠・馬籠）","prefecture":"長野県","type":["リゾート地"],
+          "highway":"中央道・塩尻IC / 中津川IC","price_range":"mid","hotel_price_avg":"9000-18000",
+          "family_score":{"infant":60,"toddler":68,"elementary":82},
+          "best_season":["4-11月（新緑・紅葉◎）"],"tags":["宿場町","歴史","街道歩き","写真映え","中央道沿線"],
+          "attractions":["妻籠宿（重要伝統的建造物群保存地区）","奈良井宿","木曽福島宿","開田高原（御嶽山）"],
+          "food":["栗きんとん","そば","五平餅","朴葉ずし","木曽の御料酒"] },
+
+        { "id":"hakuba","name":"白馬・大町","prefecture":"長野県","type":["リゾート地","温泉地"],
+          "highway":"長野道・豊科IC→R147","price_range":"mid","hotel_price_avg":"10000-22000",
+          "family_score":{"infant":65,"toddler":73,"elementary":86},
+          "best_season":["12-3月（スキー）","7-8月（高山植物・トレッキング）"],"tags":["スキー","北アルプス","温泉","外国人人気","インバウンド◎"],
+          "attractions":["白馬八方尾根（スキー・夏トレッキング）","白馬五竜アルプス平","大出の吊り橋","八方池（絶景）"],
+          "food":["信州そば","地ビール（白馬ブルワリー）","高原野菜","白馬産わさび"] }
       ]
     },
 
@@ -679,7 +707,84 @@
           "family_score":{"infant":70,"toddler":76,"elementary":84},
           "best_season":["3-5月","9-11月"],"tags":["美観地区","川舟","アウトレット","歴史"],
           "attractions":["倉敷美観地区","大原美術館","川舟流し","三井アウトレット倉敷"],
-          "food":["牡蠣","タコ料理","フルーツ","えびめし"] }
+          "food":["牡蠣","タコ料理","フルーツ","えびめし"] },
+
+        { "id":"gotemba","name":"御殿場・裾野","prefecture":"静岡県","type":["リゾート地","高速IC周辺"],
+          "highway":"新東名・御殿場JCT / 東名・御殿場IC","price_range":"mid","hotel_price_avg":"9000-18000",
+          "family_score":{"infant":75,"toddler":83,"elementary":91},
+          "best_season":["通年","5月（ツツジ）","12-2月（富士山ビュー）"],"tags":["アウトレット","富士山ビュー","IC直結","レジャー","子連れ◎"],
+          "attractions":["御殿場プレミアムアウトレット","富士サファリパーク","時之栖（イルミネーション）","ぐりんぱ（遊園地）"],
+          "food":["御殿場高原ビール","富士宮やきそば","わさびスイーツ","牛乳（朝霧高原産）"] },
+
+        { "id":"numazu_mishima","name":"沼津・三島","prefecture":"静岡県","type":["主要都市","高速IC周辺"],
+          "highway":"東名・沼津IC / 新東名・長泉沼津IC","price_range":"mid","hotel_price_avg":"8000-16000",
+          "family_score":{"infant":72,"toddler":78,"elementary":86},
+          "best_season":["通年"],"tags":["深海魚","水族館","IC近い","富士山ビュー","海鮮"],
+          "attractions":["沼津港深海水族館（シーラカンス）","三嶋大社","三島スカイウォーク（日本最長吊り橋）","沼津港（魚市場）"],
+          "food":["深海魚料理","桜えびかき揚げ","あじの干物","沼津バーガー"] },
+
+        { "id":"fuji_fujinomiya","name":"富士・富士宮","prefecture":"静岡県","type":["リゾート地","高速IC周辺"],
+          "highway":"新東名・新富士IC / 東名・富士IC","price_range":"mid","hotel_price_avg":"9000-18000",
+          "family_score":{"infant":72,"toddler":80,"elementary":90},
+          "best_season":["7-8月（富士登山）","12-3月（富士山ビュー◎）"],"tags":["富士山","世界遺産","朝霧高原","IC近い","写真映え"],
+          "attractions":["富士山（世界遺産）","朝霧高原（牧場・乗馬体験）","富士山本宮浅間大社","白糸の滝"],
+          "food":["富士宮やきそば","朝霧ヨーグル（産地直送）","マス料理","牛乳"] },
+
+        { "id":"yaizu","name":"焼津・御前崎","prefecture":"静岡県","type":["主要都市","高速IC周辺"],
+          "highway":"東名・焼津IC","price_range":"budget","hotel_price_avg":"7000-13000",
+          "family_score":{"infant":65,"toddler":71,"elementary":78},
+          "best_season":["通年"],"tags":["マグロ","海鮮","コスパ◎","IC近い"],
+          "attractions":["焼津さかなセンター","大崩海岸（奇岩）","御前崎灯台","石津浜"],
+          "food":["マグロ（水揚げ日本一）","かつお","桜えびかき揚げ","シラス丼"] },
+
+        { "id":"kakegawa","name":"掛川・袋井","prefecture":"静岡県","type":["主要都市","高速IC周辺"],
+          "highway":"新東名・掛川IC / 東名・掛川IC","price_range":"budget","hotel_price_avg":"7000-13000",
+          "family_score":{"infant":68,"toddler":75,"elementary":83},
+          "best_season":["通年","5月（藤まつり）"],"tags":["IC近い","お茶","掛川城","浜松との中間"],
+          "attractions":["掛川城","茶の都ミュージアム","ヤマハリゾートつま恋（キャンプ・温泉）","エコパスタジアム"],
+          "food":["掛川茶スイーツ","うなぎ","メロン","静岡おでん"] },
+
+        { "id":"gamagori","name":"蒲郡","prefecture":"愛知県","type":["リゾート地","高速IC周辺"],
+          "highway":"東名・音羽蒲郡IC","price_range":"mid","hotel_price_avg":"9000-20000",
+          "family_score":{"infant":78,"toddler":85,"elementary":92},
+          "best_season":["通年"],"tags":["テーマパーク","海","IC近い","子連れ◎","名古屋〜静岡の中間"],
+          "attractions":["ラグーナテンボス（テーマパーク・フェスティバルウォーク）","竹島水族館","蒲郡温泉","蒲郡みかん狩り"],
+          "food":["三河産うなぎ","ちくわ（豊橋）","みかん","蒲郡ラーメン"] },
+
+        { "id":"ena","name":"恵那・中津川","prefecture":"岐阜県","type":["主要都市","高速IC周辺"],
+          "highway":"中央道・恵那IC / 中津川IC","price_range":"budget","hotel_price_avg":"7000-13000",
+          "family_score":{"infant":62,"toddler":68,"elementary":76},
+          "best_season":["通年","10-11月（紅葉・栗）"],"tags":["IC近い","栗きんとん発祥地","馬籠近郊","中央道沿線"],
+          "attractions":["恵那峡（ダム湖クルーズ）","日本大正村（明智）","馬籠宿（近郊）"],
+          "food":["栗きんとん（中津川が本場）","五平餅","恵那鶏","栗おこわ"] },
+
+        { "id":"myoko","name":"妙高・上越","prefecture":"新潟県","type":["リゾート地","温泉地"],
+          "highway":"上信越道・妙高高原IC","price_range":"mid","hotel_price_avg":"9000-18000",
+          "family_score":{"infant":65,"toddler":73,"elementary":84},
+          "best_season":["12-3月（スキー）","5-10月（高原・温泉）"],"tags":["スキー","温泉","高原","北陸の玄関口","関越から北陸へ"],
+          "attractions":["赤倉温泉","池の平温泉スキー場","いもり池（妙高山ビュー）","関温泉（秘湯）"],
+          "food":["上越産コシヒカリ","日本海の海鮮（直江津港）","謙信公ゆかりのグルメ"] },
+
+        { "id":"itoigawa","name":"糸魚川・ヒスイ海岸","prefecture":"新潟県","type":["主要都市","高速IC周辺"],
+          "highway":"北陸道・糸魚川IC","price_range":"budget","hotel_price_avg":"6000-12000",
+          "family_score":{"infant":62,"toddler":68,"elementary":76},
+          "best_season":["通年","7-9月（海水浴）"],"tags":["日本海","ヒスイ","ジオパーク","IC近い","フォッサマグナ"],
+          "attractions":["フォッサマグナミュージアム（ヒスイ）","親不知海岸（断崖絶壁）","糸魚川ジオパーク","ヒスイ海岸（石拾い）"],
+          "food":["のどぐろ","ヒスイそば","海鮮丼","たら汁"] },
+
+        { "id":"takaoka_himi","name":"高岡・氷見","prefecture":"富山県","type":["主要都市","高速IC周辺"],
+          "highway":"北陸道・高岡IC","price_range":"budget","hotel_price_avg":"7000-13000",
+          "family_score":{"infant":65,"toddler":72,"elementary":80},
+          "best_season":["冬（寒ブリ・12-2月）","通年"],"tags":["海鮮","大仏","ドラえもん","日本海","IC近い"],
+          "attractions":["高岡大仏","瑞龍寺（国宝）","藤子・F・不二雄ふるさとギャラリー","氷見漁港朝市"],
+          "food":["氷見の寒ブリ（冬の絶品）","高岡コロッケ","ますの寿司","昆布締め"] },
+
+        { "id":"noto","name":"能登・輪島","prefecture":"石川県","type":["リゾート地","主要都市"],
+          "highway":"のと里山海道・穴水IC / 輪島","price_range":"mid","hotel_price_avg":"10000-22000",
+          "family_score":{"infant":62,"toddler":68,"elementary":78},
+          "best_season":["4-10月"],"tags":["輪島朝市","半島ドライブ","日本海","復興応援","絶景海岸"],
+          "attractions":["輪島朝市（復興中・応援観光）","白米千枚田（世界農業遺産）","総持寺祖院","ランプの宿"],
+          "food":["能登牛","輪島ふぐ","のどぐろ","岩牡蠣","能登の塩"] }
       ]
     },
 

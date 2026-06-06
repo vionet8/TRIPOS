@@ -143,6 +143,24 @@
 
     "naha":          { "route_ids": [],                           "detour_min": 999, "note": "沖縄・フライト前提" },
     "onna":          { "route_ids": [],                           "detour_min": 999, "note": "沖縄・フライト前提" },
-    "nago":          { "route_ids": [],                           "detour_min": 999, "note": "沖縄・フライト前提" }
+    "nago":          { "route_ids": [],                           "detour_min": 999, "note": "沖縄・フライト前提" },
+
+    "kiyosato":      { "route_ids": ["chuo"],                     "detour_min": 0,  "highway_ic": "中央道・長坂IC" },
+    "tateshina":     { "route_ids": ["chuo"],                     "detour_min": 5,  "highway_ic": "中央道・諏訪南IC / 茅野IC" },
+    "kisoji":        { "route_ids": ["chuo"],                     "detour_min": 10, "highway_ic": "中央道・塩尻IC→木曽路 / 中津川IC" },
+    "hakuba":        { "route_ids": ["kanetsu_hokuriku"],         "detour_min": 30, "highway_ic": "長野道・豊科IC→R147（北アルプス）" },
+
+    "gotemba":       { "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "新東名・御殿場JCT / 東名・御殿場IC" },
+    "numazu_mishima":{ "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "東名・沼津IC / 新東名・長泉沼津IC" },
+    "fuji_fujinomiya":{ "route_ids": ["tomei"],                   "detour_min": 5,  "highway_ic": "新東名・新富士IC / 東名・富士IC" },
+    "yaizu":         { "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "東名・焼津IC" },
+    "kakegawa":      { "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "新東名・掛川IC / 東名・掛川IC" },
+    "gamagori":      { "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "東名・音羽蒲郡IC" },
+    "ena":           { "route_ids": ["chuo"],                     "detour_min": 0,  "highway_ic": "中央道・恵那IC / 中津川IC" },
+
+    "myoko":         { "route_ids": ["kanetsu_hokuriku"],         "detour_min": 0,  "highway_ic": "上信越道・妙高高原IC" },
+    "itoigawa":      { "route_ids": ["kanetsu_hokuriku"],         "detour_min": 0,  "highway_ic": "北陸道・糸魚川IC" },
+    "takaoka_himi":  { "route_ids": ["kanetsu_hokuriku"],         "detour_min": 10, "highway_ic": "北陸道・高岡IC" },
+    "noto":          { "route_ids": ["kanetsu_hokuriku"],         "detour_min": 35, "highway_ic": "のと里山海道・穴水IC（金沢東ICから分岐）" }
   }
 }
