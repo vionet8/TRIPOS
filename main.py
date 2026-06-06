@@ -45,10 +45,11 @@ class RecommendRequest(BaseModel):
     children: str = ""    # 子供の年齢（例：3歳・6歳）
     nights: int = 1
     budget: str = "mid"   # budget/mid/premium/luxury
-    mode: str = "normal"  # normal / kiseи（帰省モード）
-    weight_family: int = 3   # 子連れ重視度 1-5
-    weight_cost: int = 3     # コスパ重視度 1-5
-    weight_onsen: int = 3    # 温泉重視度 1-5
+    mode: str = "normal"       # normal / kisei（帰省・長距離モード）
+    group_type: str = "family" # family / couple / friends / solo
+    weight_family: int = 3     # 子連れ重視度 1-5
+    weight_cost: int = 3       # コスパ重視度 1-5
+    weight_onsen: int = 3      # 温泉重視度 1-5
 
 
 @app.get("/")
@@ -93,7 +94,13 @@ async def recommend(req: RecommendRequest):
 
     mode_note = ""
     if req.mode == "kisei":
-        mode_note = "※帰省モード：長距離移動の疲労軽減と子供の負担を最優先。観光より休憩・快適性重視で選ぶこと。"
+        mode_note = "※帰省・長距離モード：観光目的ではなく移動効率重視。出発地〜目的地の中間地点として距離的に適切で、疲れを取れる宿があるエリアを優先すること。"
+
+    group_labels = {"family":"子連れ家族", "couple":"カップル（大人2人）", "friends":"複数人グループ（子供なし）", "solo":"ひとり旅"}
+    group_note = group_labels.get(req.group_type, req.group_type)
+    family_note = ""
+    if req.group_type != "family":
+        family_note = "※子連れではないため、family_scoreは考慮不要。大人向けの観光・グルメ・温泉を重視すること。"
 
     weight_note = f"ユーザーの重視度（1〜5）: 子連れ適性={req.weight_family} / コスパ={req.weight_cost} / 温泉={req.weight_onsen}"
 
@@ -105,11 +112,13 @@ async def recommend(req: RecommendRequest):
 - 目的地：{req.destination}
 - 旅の目的：{req.purpose}
 - 出発日：{req.travel_date}
+- 同行者：{group_note}
 - 人数：大人{req.adults}人、子供 {req.children if req.children else "なし"}
 - 泊数：{req.nights}泊
 - 予算感：{req.budget}（budget=〜8000円/人、mid=8000〜15000円、premium=15000〜25000円）
 - {weight_note}
 {mode_note}
+{family_note}
 
 ## エリアデータベース（125エリア）
 {json.dumps(areas_summary, ensure_ascii=False, indent=None)}

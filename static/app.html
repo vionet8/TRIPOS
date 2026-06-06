@@ -73,15 +73,15 @@
 
           <!-- モード選択 -->
           <div>
-            <label class="block text-xs font-bold text-gray-600 mb-2">🚗 旅のモード <span class="text-brand">*</span></label>
+            <label class="block text-xs font-bold text-gray-600 mb-2">🚗 旅のタイプ <span class="text-brand">*</span></label>
             <div class="grid grid-cols-2 gap-2">
               <button type="button" data-mode="normal" onclick="selectMode(this)"
                 class="mode-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-3 text-center text-xs font-bold transition-colors">
-                🗺️ 通常旅行<br/><span class="font-normal text-gray-400">観光・グルメ・温泉</span>
+                🗺️ 観光旅行<br/><span class="font-normal text-gray-400">途中も楽しみたい</span>
               </button>
               <button type="button" data-mode="kisei" onclick="selectMode(this)"
                 class="mode-btn border-2 border-gray-200 text-gray-600 rounded-xl py-3 text-center text-xs font-bold hover:border-navy hover:text-navy transition-colors">
-                🏠 帰省モード<br/><span class="font-normal text-gray-400">疲労軽減・快適重視</span>
+                🏠 帰省・長距離<br/><span class="font-normal text-gray-400">中間地点を最適化</span>
               </button>
             </div>
             <input type="hidden" id="mode" value="normal" />
@@ -129,22 +129,45 @@
             </div>
           </div>
 
-          <!-- 人数 -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">👨‍👩‍👧 大人の人数</label>
-              <select id="adults"
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal bg-white">
-                <option value="1">1人</option>
-                <option value="2" selected>2人</option>
-                <option value="3">3人</option>
-                <option value="4">4人以上</option>
-              </select>
+          <!-- 同行者タイプ -->
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-2">👥 同行者</label>
+            <div class="grid grid-cols-4 gap-2 mb-3">
+              <button type="button" data-group="family" onclick="selectGroup(this)"
+                class="group-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-2.5 text-center text-xs font-bold transition-colors">
+                👨‍👩‍👧<br/>子連れ家族
+              </button>
+              <button type="button" data-group="couple" onclick="selectGroup(this)"
+                class="group-btn border-2 border-gray-200 text-gray-600 rounded-xl py-2.5 text-center text-xs font-bold hover:border-teal hover:text-teal transition-colors">
+                👫<br/>カップル
+              </button>
+              <button type="button" data-group="friends" onclick="selectGroup(this)"
+                class="group-btn border-2 border-gray-200 text-gray-600 rounded-xl py-2.5 text-center text-xs font-bold hover:border-teal hover:text-teal transition-colors">
+                👬<br/>複数人
+              </button>
+              <button type="button" data-group="solo" onclick="selectGroup(this)"
+                class="group-btn border-2 border-gray-200 text-gray-600 rounded-xl py-2.5 text-center text-xs font-bold hover:border-teal hover:text-teal transition-colors">
+                🧍<br/>ひとり旅
+              </button>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">🧒 子供の年齢</label>
-              <input id="children" type="text" placeholder="例：3歳・6歳"
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+            <input type="hidden" id="group_type" value="family" />
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">人数</label>
+                <select id="adults"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal bg-white">
+                  <option value="1">1人</option>
+                  <option value="2" selected>2人</option>
+                  <option value="3">3人</option>
+                  <option value="4">4人以上</option>
+                </select>
+              </div>
+              <div id="childrenField">
+                <label class="block text-xs font-bold text-gray-600 mb-1">🧒 子供の年齢</label>
+                <input id="children" type="text" placeholder="例：3歳・6歳"
+                  class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+              </div>
             </div>
           </div>
 
@@ -286,6 +309,24 @@
       }
     }
 
+    function selectGroup(btn) {
+      document.querySelectorAll('.group-btn').forEach(b => {
+        b.classList.remove('border-teal','text-teal','bg-teal/5','border-navy','text-navy','bg-navy/5');
+        b.classList.add('border-gray-200','text-gray-600');
+      });
+      btn.classList.add('border-teal','text-teal','bg-teal/5');
+      btn.classList.remove('border-gray-200','text-gray-600');
+      document.getElementById('group_type').value = btn.dataset.group;
+      // 子連れ以外は子供年齢フィールドを非表示
+      const cf = document.getElementById('childrenField');
+      if (btn.dataset.group === 'family') {
+        cf.style.display = '';
+      } else {
+        cf.style.display = 'none';
+        document.getElementById('children').value = '';
+      }
+    }
+
     function updateWeight(key, val) {
       document.getElementById('weight_' + key + '_val').textContent = val;
     }
@@ -351,6 +392,7 @@
           body: JSON.stringify({
             origin, destination, purpose, travel_date, nights, adults, children, budget,
             mode: document.getElementById('mode').value || 'normal',
+            group_type: document.getElementById('group_type').value || 'family',
             weight_family: parseInt(document.getElementById('weight_family').value),
             weight_cost: parseInt(document.getElementById('weight_cost').value),
             weight_onsen: parseInt(document.getElementById('weight_onsen').value),
