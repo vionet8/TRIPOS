@@ -2,7 +2,7 @@
   "meta": {
     "version": "3.0.0",
     "updated": "2026-06-05",
-    "total_areas": 140,
+    "total_areas": 142,
     "price_note": "価格帯は相対比較用。実予約時は動的取得で最新価格を確認。",
     "price_index": { "budget":"〜8000円/人", "mid":"8000〜15000円/人", "premium":"15000〜25000円/人", "luxury":"25000円〜/人" },
     "types": ["主要都市","温泉地","リゾート地","高速IC周辺"]
@@ -575,6 +575,20 @@
           "best_season":["通年"],"tags":["温泉","伊豆","海","子連れ宿多"],
           "attractions":["シャボテン公園","伊豆ぐらんぱる公園","大室山","松川遊歩道"],
           "food":["伊勢エビ","金目鯛","わさび料理"] },
+
+        { "id":"izu_kogen","name":"伊豆高原","prefecture":"静岡県","type":["リゾート地","温泉地"],
+          "highway":"伊豆縦貫道・大平IC→R135（沼津ICから約45分）","price_range":"premium","hotel_price_avg":"15000-30000",
+          "family_score":{"infant":75,"toddler":83,"elementary":92},
+          "best_season":["通年","3-4月（桜）","10-11月（紅葉）"],"tags":["伊豆","海と山","子連れ施設多","ペンション多","温泉"],
+          "attractions":["大室山（お鉢めぐり・リフト）","伊豆ぐらんぱる公園（ジップライン等）","シャボテン動物公園","城ヶ崎海岸（吊り橋）"],
+          "food":["金目鯛の煮付け","伊勢エビ","わさび料理","地魚の刺身"] },
+
+        { "id":"shuzenji","name":"修善寺・中伊豆","prefecture":"静岡県","type":["温泉地","リゾート地"],
+          "highway":"伊豆縦貫道・修善寺IC（沼津ICから約30分）","price_range":"premium","hotel_price_avg":"15000-32000",
+          "family_score":{"infant":75,"toddler":80,"elderly":86,"elementary":86},
+          "best_season":["通年","2月（梅）","10-11月（紅葉）"],"tags":["伊豆の奥座敷","温泉","竹林","情緒","IC近い"],
+          "attractions":["修善寺温泉（竹林の小径）","虹の郷（イギリス村・SL）","修禅寺","天城高原（近郊）"],
+          "food":["猪鍋（冬）","山葵（わさび）料理","しいたけ料理","独鈷そば"] },
 
         { "id":"nagoya","name":"名古屋","prefecture":"愛知県","type":["主要都市"],
           "highway":"東名・名古屋IC / 新東名・豊田東JCT","price_range":"mid","hotel_price_avg":"9000-18000",

@@ -88,6 +88,8 @@
     "shizuoka":      { "route_ids": ["tomei"],                    "detour_min": 0,  "highway_ic": "東名・静岡IC / 新東名・新静岡IC" },
     "atami":         { "route_ids": ["tomei"],                    "detour_min": 20, "highway_ic": "熱海ビーチライン・熱海IC" },
     "ito":           { "route_ids": ["tomei"],                    "detour_min": 40, "highway_ic": "熱海ICから伊豆縦貫道→R135" },
+    "izu_kogen":     { "route_ids": ["tomei"],                    "detour_min": 45, "highway_ic": "東名・沼津IC→伊豆縦貫道→R135（約45分）" },
+    "shuzenji":      { "route_ids": ["tomei"],                    "detour_min": 30, "highway_ic": "東名・沼津IC→伊豆縦貫道・修善寺IC（約30分）" },
     "nagoya":        { "route_ids": ["tomei", "meishin"],         "detour_min": 0,  "highway_ic": "東名・名古屋IC / 東名阪" },
     "toyohashi":     { "route_ids": ["tomei"],                    "detour_min": 10, "highway_ic": "東名・豊川IC / 新東名・新城IC" },
     "yokkaichi":     { "route_ids": ["tomei", "meishin"],         "detour_min": 15, "highway_ic": "東名阪道・四日市IC" },
