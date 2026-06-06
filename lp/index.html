@@ -497,24 +497,74 @@
     <div class="max-w-3xl mx-auto">
       <div class="fade-in text-center mb-12">
         <p class="text-teal font-bold text-sm tracking-widest mb-3 uppercase">Why TRIPOS</p>
-        <h2 class="text-3xl md:text-4xl font-black text-navy">じゃらん・楽天と<br />何が違うのか</h2>
+        <h2 class="text-3xl md:text-4xl font-black text-navy">じゃらん・楽天・ChatGPTと<br />何が違うのか</h2>
+        <p class="text-gray-500 text-sm mt-3">「それ、ChatGPTでよくない？」と思ったあなたへ</p>
       </div>
+
+      <!-- AI比較テーブル -->
+      <div class="fade-in mb-10 overflow-x-auto">
+        <table class="w-full text-sm border-collapse bg-white rounded-2xl overflow-hidden shadow-sm">
+          <thead>
+            <tr class="bg-navy text-white">
+              <th class="text-left px-4 py-3 font-bold">できること</th>
+              <th class="text-center px-3 py-3 font-bold text-xs">ChatGPT<br/>Claude等</th>
+              <th class="text-center px-3 py-3 font-bold text-xs">じゃらん<br/>楽天</th>
+              <th class="text-center px-3 py-3 font-bold text-brand text-xs">TRIPOS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-gray-100">
+              <td class="px-4 py-3 text-gray-700">出発地→目的地から<br/><span class="font-bold">宿泊エリアを逆算</span></td>
+              <td class="text-center px-3 py-3 text-2xl">△<span class="block text-xs text-gray-400 mt-0.5">精度低い</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌<span class="block text-xs text-gray-400 mt-0.5">県選択が必須</span></td>
+              <td class="text-center px-3 py-3 text-2xl">✅<span class="block text-xs text-teal font-bold mt-0.5">専門設計</span></td>
+            </tr>
+            <tr class="border-t border-gray-100 bg-gray-50/50">
+              <td class="px-4 py-3 text-gray-700">子連れ適性・混雑・<br/><span class="font-bold">コスパをスコア化</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌<span class="block text-xs text-gray-400 mt-0.5">データなし</span></td>
+              <td class="text-center px-3 py-3 text-2xl">△<span class="block text-xs text-gray-400 mt-0.5">口コミのみ</span></td>
+              <td class="text-center px-3 py-3 text-2xl">✅<span class="block text-xs text-teal font-bold mt-0.5">125エリアDB</span></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="px-4 py-3 text-gray-700">帰省の中間地点・<br/><span class="font-bold">ガソリン代を計算</span></td>
+              <td class="text-center px-3 py-3 text-2xl">△<span class="block text-xs text-gray-400 mt-0.5">毎回ゼロから</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌</td>
+              <td class="text-center px-3 py-3 text-2xl">✅<span class="block text-xs text-teal font-bold mt-0.5">帰省モード</span></td>
+            </tr>
+            <tr class="border-t border-gray-100 bg-gray-50/50">
+              <td class="px-4 py-3 text-gray-700">家族の旅行履歴・<br/><span class="font-bold">行きたいリストを記憶</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌<span class="block text-xs text-gray-400 mt-0.5">会話が消える</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌</td>
+              <td class="text-center px-3 py-3 text-2xl">✅<span class="block text-xs text-teal font-bold mt-0.5">蓄積する</span></td>
+            </tr>
+            <tr class="border-t border-gray-100">
+              <td class="px-4 py-3 text-gray-700">子供の年齢に合わせた<br/><span class="font-bold">提案の進化</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌<span class="block text-xs text-gray-400 mt-0.5">伝え直しが必要</span></td>
+              <td class="text-center px-3 py-3 text-2xl">❌</td>
+              <td class="text-center px-3 py-3 text-2xl">✅<span class="block text-xs text-teal font-bold mt-0.5">記録して進化</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-gray-400 mt-2 text-right">※ TRIPOSの一部機能はβ版以降で順次対応予定</p>
+      </div>
+
+      <!-- 補足カード -->
       <div class="space-y-4 fade-in">
         <div class="moat-card border-teal bg-white rounded-2xl p-6 shadow-sm">
           <div class="flex gap-4 items-start">
-            <span class="text-3xl">🎯</span>
+            <span class="text-3xl">🤖</span>
             <div>
-              <p class="font-black text-navy mb-1">最適化の目的が違う</p>
-              <p class="text-sm text-gray-600">大手OTAは「予約数を最大化」するため人気スポットを前面に出す。TRIPOSは「あなたの旅満足度を最大化」するため、空いていて割安で子連れに合う場所を探す。</p>
+              <p class="font-black text-navy mb-1">「ChatGPTに聞けばいいじゃん」の限界</p>
+              <p class="text-sm text-gray-600">汎用AIは「どこが人気ですか？」には答えられる。でも「うちの子3歳で宇都宮から大阪、渋滞避けて1泊、コスパ重視」を<strong>毎回ゼロから伝え直す手間</strong>は解決しない。TRIPOSは家族のことを覚えていて、聞かれる前に考える。</p>
             </div>
           </div>
         </div>
         <div class="moat-card border-brand bg-white rounded-2xl p-6 shadow-sm">
           <div class="flex gap-4 items-start">
-            <span class="text-3xl">🧒</span>
+            <span class="text-3xl">🎯</span>
             <div>
-              <p class="font-black text-navy mb-1">子供の成長を覚えている</p>
-              <p class="text-sm text-gray-600">2歳・4歳・7歳では最適な旅が違う。大手OTAは予約データは持っていても「家族の成長に合わせた提案」には使わない。予約を売ることがビジネスだから。TRIPOSは旅の満足度を上げることがビジネスなので、成長記録を提案に活かす。</p>
+              <p class="font-black text-navy mb-1">最適化の目的が違う</p>
+              <p class="text-sm text-gray-600">大手OTAは「予約数を最大化」するため人気スポットを前面に出す。TRIPOSは「あなたの旅満足度を最大化」するため、空いていて割安で子連れに合う場所を探す。</p>
             </div>
           </div>
         </div>
