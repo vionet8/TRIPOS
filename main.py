@@ -79,17 +79,25 @@ async def debug():
         result["areas_db"] = f"OK ({len(areas)} areas)"
     except Exception as e:
         result["areas_db"] = f"ERROR: {e}"
-    # Claude API 簡易テスト
+    # 利用可能モデル一覧
     try:
         client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
-        msg = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=10,
-            messages=[{"role": "user", "content": "hi"}]
-        )
-        result["claude_api"] = f"OK: {msg.content[0].text[:20]}"
+        models = client.models.list()
+        model_ids = [m.id for m in models.data]
+        result["available_models"] = model_ids
     except Exception as e:
-        result["claude_api"] = f"ERROR: {type(e).__name__}: {str(e)}"
+        result["available_models"] = f"ERROR: {str(e)}"
+    # Claude API 簡易テスト（haiku で確認）
+    test_models = ["claude-haiku-4-5", "claude-3-5-haiku-20241022", "claude-3-haiku-20240307"]
+    for m in test_models:
+        try:
+            client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+            msg = client.messages.create(model=m, max_tokens=10, messages=[{"role":"user","content":"hi"}])
+            result["claude_api"] = f"OK with {m}: {msg.content[0].text[:20]}"
+            result["working_model"] = m
+            break
+        except Exception as e:
+            result[f"claude_{m}"] = f"{type(e).__name__}: {str(e)[:80]}"
     return result
 
 @app.get("/")
