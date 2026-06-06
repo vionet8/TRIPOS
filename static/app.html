@@ -118,11 +118,43 @@
               class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
           </div>
 
-          <!-- 帰省モード時のみ：目的地 -->
+          <!-- 帰省モード時のみ：目的地 + 往復設定 -->
           <div id="destinationRow" class="hidden">
-            <label class="block text-xs font-bold text-gray-600 mb-1">🏁 目的地 <span class="text-brand">*</span></label>
+            <label class="block text-xs font-bold text-gray-600 mb-1">🏁 目的地（帰省先） <span class="text-brand">*</span></label>
             <input id="destination" type="text" placeholder="例：大阪、広島、福岡"
-              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal mb-3" />
+
+            <!-- 往復トグル -->
+            <div class="bg-navy/5 rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold text-gray-700">🔄 往復で提案する</p>
+                  <p class="text-xs text-gray-400">行き・帰りで別エリアを提案（帰りは別ルート推奨）</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="round_trip" class="sr-only peer" checked>
+                  <div class="w-11 h-6 bg-gray-200 peer-checked:bg-teal rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                </label>
+              </div>
+
+              <!-- 費用計算 -->
+              <div class="border-t border-gray-200 pt-3">
+                <p class="text-xs font-bold text-gray-600 mb-2">💴 費用計算（ガソリン・高速代）</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">燃費（km/L）</label>
+                    <input id="fuel_efficiency" type="number" value="15" min="5" max="30" step="0.5"
+                      class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 bg-white" />
+                  </div>
+                  <div class="flex items-end pb-1">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="has_etc" checked class="w-4 h-4 accent-teal rounded" />
+                      <span class="text-xs text-gray-600 font-bold">ETCあり（割引適用）</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 観光モード時のみ：方面の希望 -->
@@ -303,7 +335,29 @@
       </div>
 
       <!-- エリアカード -->
+      <!-- 費用サマリー -->
+      <div id="costSummary" class="hidden bg-navy text-white rounded-2xl p-5 mb-5">
+        <p class="text-xs font-black text-white/50 uppercase tracking-wider mb-3">💴 費用サマリー（目安）</p>
+        <div class="grid grid-cols-2 gap-3 mb-4" id="costGrid"></div>
+        <div class="bg-white/10 rounded-xl p-3 flex items-center justify-between">
+          <span class="text-sm font-bold text-white/80">合計目安</span>
+          <span id="costTotal" class="text-xl font-black text-brand"></span>
+        </div>
+        <p id="costNote" class="text-xs text-white/40 mt-2"></p>
+      </div>
+
+      <!-- 行きのエリアカード -->
       <div id="areaCards" class="space-y-4 mb-6"></div>
+
+      <!-- 帰りのエリアカード -->
+      <div id="returnSection" class="hidden mb-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex-1 border-t border-gray-200"></div>
+          <p class="text-xs font-black text-gray-400 uppercase tracking-wider shrink-0">🔄 帰りの提案（別ルート）</p>
+          <div class="flex-1 border-t border-gray-200"></div>
+        </div>
+        <div id="returnCards" class="space-y-4"></div>
+      </div>
 
       <!-- 再提案ボタン -->
       <div class="text-center">
@@ -462,6 +516,9 @@
             weight_family: parseInt(document.getElementById('weight_family').value),
             weight_cost: parseInt(document.getElementById('weight_cost').value),
             weight_onsen: parseInt(document.getElementById('weight_onsen').value),
+            round_trip: document.getElementById('round_trip')?.checked ?? false,
+            fuel_efficiency: parseFloat(document.getElementById('fuel_efficiency')?.value || '15'),
+            has_etc: document.getElementById('has_etc')?.checked ?? true,
           })
         });
 
@@ -469,15 +526,48 @@
         const data = await res.json();
 
         // ルートサマリー
-        document.getElementById('routeLabel').textContent = `${origin} → ${destination}`;
+        const dest = document.getElementById('destination').value.trim();
+        document.getElementById('routeLabel').textContent = dest ? `${origin} → ${dest}` : origin;
         document.getElementById('routeComment').textContent = data.route_comment || '';
 
-        // エリアカード描画
+        // 費用サマリー
+        const cs = data.cost_summary;
+        if (cs && cs.total_min) {
+          const costItems = [
+            { label: '🚗 ガソリン代', val: `¥${cs.fuel_cost?.toLocaleString() ?? '—'}` },
+            { label: '🛣 高速代', val: `¥${cs.toll_cost?.toLocaleString() ?? '—'}` },
+            { label: '🏨 宿泊代（目安）', val: `¥${cs.hotel_cost_min?.toLocaleString()}〜` },
+            { label: '📏 走行距離', val: `約${cs.estimated_distance_km}km` },
+          ];
+          document.getElementById('costGrid').innerHTML = costItems.map(c =>
+            `<div class="bg-white/10 rounded-xl p-3"><p class="text-xs text-white/50">${c.label}</p><p class="font-black text-sm">${c.val}</p></div>`
+          ).join('');
+          document.getElementById('costTotal').textContent = `¥${cs.total_min?.toLocaleString()}〜${cs.total_max?.toLocaleString()}`;
+          document.getElementById('costNote').textContent = cs.note || '';
+          document.getElementById('costSummary').classList.remove('hidden');
+        } else {
+          document.getElementById('costSummary').classList.add('hidden');
+        }
+
+        // 行きエリアカード描画
         const container = document.getElementById('areaCards');
         container.innerHTML = '';
         data.areas.forEach((area, i) => {
           container.innerHTML += buildAreaCard(area, i);
         });
+
+        // 帰りエリアカード描画
+        const returnSection = document.getElementById('returnSection');
+        const returnCards = document.getElementById('returnCards');
+        if (data.return_areas && data.return_areas.length > 0) {
+          returnCards.innerHTML = '';
+          data.return_areas.forEach((area, i) => {
+            returnCards.innerHTML += buildAreaCard(area, i);
+          });
+          returnSection.classList.remove('hidden');
+        } else {
+          returnSection.classList.add('hidden');
+        }
 
         document.getElementById('loadingSection').classList.add('hidden');
         document.getElementById('resultSection').classList.remove('hidden');

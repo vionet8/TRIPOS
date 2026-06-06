@@ -51,6 +51,9 @@ class RecommendRequest(BaseModel):
     weight_family: int = 3     # 子連れ重視度 1-5
     weight_cost: int = 3       # コスパ重視度 1-5
     weight_onsen: int = 3      # 温泉重視度 1-5
+    round_trip: bool = False   # 往復提案（帰省モードのみ）
+    fuel_efficiency: float = 15.0  # 燃費 km/L
+    has_etc: bool = True           # ETC割引あり
 
 
 @app.get("/")
@@ -95,7 +98,8 @@ async def recommend(req: RecommendRequest):
 
     mode_note = ""
     if req.mode == "kisei":
-        mode_note = f"※帰省・長距離モード：出発地〜目的地の中間地点として距離的に適切なエリアを提案すること。中間地点での滞在目的は「{req.purpose}」なので、それに合ったエリアを選ぶ。"
+        round_note = "【往復モード】行き（出発地→目的地の中間）と帰り（目的地→出発地の中間、別ルート推奨）の両方を提案すること。" if req.round_trip else ""
+        mode_note = f"※帰省・長距離モード：出発地〜目的地の中間地点として距離的に適切なエリアを提案すること。中間地点での滞在目的は「{req.purpose}」なので、それに合ったエリアを選ぶ。{round_note}"
     else:
         dest_note = f"方面の希望：{req.direction}" if req.direction else "方面の希望：特になし（AIが最適なエリアを自由に提案）"
         mode_note = f"※観光旅行モード：目的地は決まっていない。出発地から車で現実的に行ける範囲で、旅の目的・同行者に最もマッチするエリアをAIが提案すること。{dest_note}"
@@ -107,6 +111,9 @@ async def recommend(req: RecommendRequest):
         family_note = "※子連れではないため、family_scoreは考慮不要。大人向けの観光・グルメ・温泉を重視すること。"
 
     weight_note = f"ユーザーの重視度（1〜5）: 子連れ適性={req.weight_family} / コスパ={req.weight_cost} / 温泉={req.weight_onsen}"
+
+    etc_note = "ETC割引あり（約30〜50%引き）" if req.has_etc else "ETC割引なし"
+    cost_note = f"【費用計算】燃費={req.fuel_efficiency}km/L、ガソリン単価=約175円/L、高速料金目安=約25円/km（{etc_note}）。距離を推定して往復のガソリン代・高速代を計算すること。"
 
     prompt = f"""あなたはTRIPOSというAI旅行コンシェルジュです。
 家族の車旅行において、出発地から目的地への移動ルート上で最適な「宿泊エリア」を提案してください。
@@ -123,6 +130,7 @@ async def recommend(req: RecommendRequest):
 - {weight_note}
 {mode_note}
 {family_note}
+{cost_note if req.mode == "kisei" else ""}
 
 ## エリアデータベース（125エリア）
 {json.dumps(areas_summary, ensure_ascii=False, indent=None)}
@@ -131,7 +139,9 @@ async def recommend(req: RecommendRequest):
 1. 出発地→目的地のルートを地理的に考慮し、中継地として現実的なエリアを選ぶ
 2. 旅の目的・子連れ条件・予算に合うエリアを優先する
 3. 「人気No.1」ではなく「今のこの家族に最適な狙い目」を選ぶ
-4. 必ず3エリアを提案すること
+4. 必ず行きの提案を3エリア提案すること
+5. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること（行きと異なるルート・エリアを推奨）
+6. 帰省モードの場合、費用サマリー（距離・ガソリン代・高速代・宿泊代の合計）を必ず計算すること
 
 ## 回答形式（JSON形式で返すこと、他の文章は不要）
 {{
@@ -150,7 +160,7 @@ async def recommend(req: RecommendRequest):
         "price_surge_penalty": -10
       }},
       "reason": "このエリアを推す理由（2〜3文、具体的に）",
-      "highlight": "一言キャッチ（例：うなぎの産地、今が穴場）",
+      "highlight": "一言キャッチ",
       "price_range": "mid",
       "hotel_price_avg": "8000-15000",
       "tags": ["タグ1","タグ2"],
@@ -159,13 +169,24 @@ async def recommend(req: RecommendRequest):
       "wishlist_match": false
     }}
   ],
-  "route_comment": "ルート全体へのひとこと（渋滞・距離感など）"
+  "return_areas": [],
+  "route_comment": "ルート全体へのひとこと",
+  "cost_summary": {{
+    "estimated_distance_km": 500,
+    "fuel_cost": 5800,
+    "toll_cost": 8000,
+    "hotel_cost_min": 16000,
+    "hotel_cost_max": 30000,
+    "total_min": 29800,
+    "total_max": 43800,
+    "note": "費用の補足コメント（ETC割引・往復の場合は往復合計など）"
+  }}
 }}"""
 
     try:
         message = client.messages.create(
             model="claude-3-5-sonnet-20241022",
-            max_tokens=2000,
+            max_tokens=4000,
             messages=[{"role": "user", "content": prompt}]
         )
     except Exception as e:
