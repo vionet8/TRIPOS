@@ -27,6 +27,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 AREAS_DB = json.loads((Path(__file__).parent / "data" / "areas_db.json").read_text(encoding="utf-8"))
 # routes_db をロード
 ROUTES_DB = json.loads((Path(__file__).parent / "data" / "routes_db.json").read_text(encoding="utf-8"))
+# route_area_map をロード（各エリアのルートID・迂回時間）
+ROUTE_AREA_MAP = json.loads((Path(__file__).parent / "data" / "route_area_map.json").read_text(encoding="utf-8"))["areas"]
 
 # 全エリアをフラットリストに変換
 def get_all_areas():
@@ -170,33 +172,78 @@ def match_routes(origin: str, destination: str) -> list:
 
 
 def get_filtered_areas(origin: str, destination: str, mode: str = "normal", max_areas: int = 20) -> list:
-    """ルートDBを優先し、なければサブリージョンでフィルタ"""
+    """
+    ルートDB + route_area_map を使ってエリアを絞り込む。
+    帰省モード: マッチしたルートのエリアのみ、detour_min<=30 を優先（魅力高エリアは例外）
+    観光モード: ルート沿線 or サブリージョンでフィルタ（detour制限なし）
+    """
     all_areas = get_all_areas()
-    areas_by_pref = {}
-    for a in all_areas:
-        p = a.get("prefecture", "")
-        areas_by_pref.setdefault(p, []).append(a)
 
-    # ① ルートDBでマッチング
+    # ① マッチしたルートを特定
     matched_routes = match_routes(origin, destination) if destination else []
-    if matched_routes:
+    matched_route_ids = [r["id"] for r in matched_routes]
+
+    if matched_route_ids:
+        # route_area_map を使ってルート沿線エリアを抽出
+        detour_limit = 30 if mode == "kisei" else 70
+        family_score_exception = 85  # 魅力的なエリアはdetour制限を60分に緩和
+
+        strict_areas = []   # detour <= 制限内
+        bonus_areas = []    # 魅力高（family_score>=85）で制限超え
+        loose_areas = []    # via_prefマッチのフォールバック
+
+        for area in all_areas:
+            aid = area["id"]
+            map_entry = ROUTE_AREA_MAP.get(aid)
+            if not map_entry:
+                continue
+            area_route_ids = map_entry.get("route_ids", [])
+            detour = map_entry.get("detour_min", 999)
+
+            # ルート一致チェック
+            if not any(rid in area_route_ids for rid in matched_route_ids):
+                continue
+
+            # family_score_max を計算
+            fs = area.get("family_score", {})
+            fsmax = max(fs.values()) if fs else 0
+
+            if detour <= detour_limit:
+                area = dict(area)
+                area["_detour_min"] = detour
+                area["_highway_ic"] = map_entry.get("highway_ic", "")
+                strict_areas.append(area)
+            elif mode == "kisei" and fsmax >= family_score_exception and detour <= 60:
+                # 帰省モードでも魅力大 & 1時間以内は例外許可
+                area = dict(area)
+                area["_detour_min"] = detour
+                area["_highway_ic"] = map_entry.get("highway_ic", "")
+                bonus_areas.append(area)
+
+        filtered = strict_areas + bonus_areas
+
+        # detourが小さい順 → family_score高い順でソート
+        filtered.sort(key=lambda a: (a.get("_detour_min", 999), -max(a.get("family_score", {}).values() or [0])))
+
+        if len(filtered) >= 6:
+            return filtered[:max_areas]
+
+        # ② フォールバック：via_prefs でフィルタ（ルートは合うがmap未登録エリア補完）
         via_prefs = []
         for r in matched_routes:
             via_prefs.extend(r.get("via_prefs", []))
-        via_prefs = list(dict.fromkeys(via_prefs))  # 重複除去・順序保持
-
-        filtered = []
-        for pref in via_prefs:
-            # 完全一致 or 前方一致
-            for area in all_areas:
-                a_pref = area.get("prefecture", "")
-                if pref in a_pref or a_pref in pref:
-                    filtered.append(area)
-
-        if len(filtered) >= 8:
+        via_prefs = list(dict.fromkeys(via_prefs))
+        for area in all_areas:
+            if area in filtered:
+                continue
+            a_pref = area.get("prefecture", "")
+            if any(pref in a_pref or a_pref in pref for pref in via_prefs):
+                loose_areas.append(area)
+        filtered = filtered + loose_areas[:max(0, max_areas - len(filtered))]
+        if len(filtered) >= 4:
             return filtered[:max_areas]
 
-    # ② フォールバック：サブリージョンで絞り込み
+    # ③ フォールバック：サブリージョンで絞り込み
     target_subs = get_intermediate_subregions(origin, destination, mode)
     filtered = []
     for a in all_areas:
@@ -311,7 +358,7 @@ async def _recommend_inner(req: RecommendRequest):
         fs = a.get("family_score", {})
         if fs:
             child_score = max(fs.values())
-        areas_summary.append({
+        entry = {
             "id": a["id"],
             "name": a["name"],
             "prefecture": a["prefecture"],
@@ -324,7 +371,13 @@ async def _recommend_inner(req: RecommendRequest):
             "tags": a.get("tags", []),
             "attractions": a.get("attractions", [])[:3],
             "food": a.get("food", [])[:3],
-        })
+        }
+        # route_area_mapからIC情報・迂回時間を付与
+        if a.get("_highway_ic"):
+            entry["highway_ic"] = a["_highway_ic"]
+        if a.get("_detour_min") is not None:
+            entry["detour_from_highway_min"] = a["_detour_min"]
+        areas_summary.append(entry)
 
     mode_note = ""
     if req.mode == "kisei":
@@ -388,6 +441,8 @@ async def _recommend_inner(req: RecommendRequest):
 5. 必ず行きの提案を3エリア提案すること
 6. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること
 7. 帰省モードの場合、費用サマリーを計算すること
+8. エリアデータに"detour_from_highway_min"がある場合、迂回時間として参考にすること（帰省モードでは0〜15分のエリアを最優先。30分超は「少し寄り道」と説明に入れること）
+9. highway_icが付いている場合はhighway_viaとして回答に含めること
 
 ## 回答形式（JSON形式で返すこと、他の文章は不要）
 {{
