@@ -445,6 +445,95 @@ async def admin_subscribers(key: str = ""):
     return HTMLResponse(content=html)
 
 
+# ─────────────────────────────────────────
+# ヒアリングチャットAPI
+# ─────────────────────────────────────────
+class ChatMessage(BaseModel):
+    role: str   # "user" or "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+
+@app.post("/api/chat")
+async def chat(req: ChatRequest):
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+    system_prompt = """あなたはTRIPOSのAI旅行コンシェルジュ「チャッピー」です。
+家族旅行・帰省・長距離移動の計画を立てるお手伝いをします。
+
+ユーザーと自然な会話でヒアリングし、以下の情報を収集してください：
+1. 旅のタイプ（観光旅行 / 帰省・長距離移動）
+2. 出発地（例：宇都宮、大阪）
+3. 目的地（帰省の場合は必須。観光の場合はAIが提案）
+4. 方面の希望（観光の場合・任意）
+5. 旅の目的（観光 / グルメ / 温泉・ホテル / レジャー）
+6. 出発予定日
+7. 泊数（1〜10泊）
+8. 同行者（子連れ家族 / カップル / 複数人グループ / ひとり旅）
+9. 大人人数・子供年齢（子連れの場合）
+10. 予算感（節約 / 標準 / プレミアム / 贅沢）
+11. 帰省の場合：往復提案が必要か、燃費・ETCの有無
+
+会話のルール：
+- 一度に聞く質問は1〜2つまで。自然な会話にする
+- すでに答えた情報は再度聞かない
+- フレンドリーで温かいトーンで話す（タメ口ではなくです・ます調）
+- 十分な情報が集まったら（最低限：出発地・旅のタイプ・目的・日程）、最後に以下のJSON形式で情報をまとめて返す（他の文章は不要）
+
+十分な情報が集まったと判断したら、必ず以下の形式で返答する：
+[COLLECTED]
+{
+  "mode": "normal または kisei",
+  "origin": "出発地",
+  "destination": "目的地（帰省の場合）",
+  "destination2": "2つ目の目的地（あれば）",
+  "direction": "方面の希望（あれば）",
+  "purpose": "観光 または グルメ または 温泉・ホテル または レジャー",
+  "travel_date": "YYYY-MM-DD",
+  "nights": 泊数の整数,
+  "adults": 大人人数,
+  "children": "子供の年齢（例：3歳・6歳）",
+  "budget": "budget または mid または premium または luxury",
+  "group_type": "family または couple または friends または solo",
+  "round_trip": trueまたはfalse,
+  "fuel_efficiency": 燃費数値,
+  "has_etc": trueまたはfalse,
+  "summary": "収集した情報の日本語サマリー（1文）"
+}
+[/COLLECTED]"""
+
+    messages_for_api = [{"role": m.role, "content": m.content} for m in req.messages]
+
+    try:
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1000,
+            system=system_prompt,
+            messages=messages_for_api
+        )
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Claude API error: {str(e)}")
+
+    reply = message.content[0].text.strip()
+
+    # [COLLECTED]ブロックが含まれているか確認
+    collected_data = None
+    if "[COLLECTED]" in reply and "[/COLLECTED]" in reply:
+        try:
+            json_start = reply.index("[COLLECTED]") + len("[COLLECTED]")
+            json_end = reply.index("[/COLLECTED]")
+            json_str = reply[json_start:json_end].strip()
+            collected_data = json.loads(json_str)
+            # メッセージ部分はサマリーのみ
+            reply = f"✅ ヒアリング完了！\n\n{collected_data.get('summary', '条件が整いました。')}\n\nこの内容で宿泊エリアを探しますね。「提案を見る」ボタンを押してください！"
+        except Exception:
+            pass
+
+    return {"reply": reply, "collected": collected_data}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

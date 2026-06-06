@@ -87,6 +87,49 @@
       </div>
     </div>
 
+    <!-- 入力モード切替タブ -->
+    <div class="flex bg-gray-100 rounded-2xl p-1 mb-4" id="inputModeTabs">
+      <button onclick="switchInputMode('form')" id="tabForm"
+        class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-white text-navy shadow-sm">
+        📋 フォームで入力
+      </button>
+      <button onclick="switchInputMode('chat')" id="tabChat"
+        class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all text-gray-500">
+        💬 AIと相談して決める
+      </button>
+    </div>
+
+    <!-- チャットセクション -->
+    <div id="chatSection" class="hidden mb-6">
+      <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-navy text-white px-5 py-4 flex items-center gap-3">
+          <span class="text-xl">💬</span>
+          <div>
+            <p class="font-black text-sm leading-tight">チャッピーに相談する</p>
+            <p class="text-white/50 text-xs">旅の詳細をAIが会話で聞き取ります</p>
+          </div>
+        </div>
+        <div id="chatMessages" class="p-4 space-y-3 min-h-[300px] max-h-[480px] overflow-y-auto">
+          <!-- メッセージがここに入る -->
+        </div>
+        <div id="chatInputArea" class="border-t border-gray-100 p-3 flex gap-2">
+          <input id="chatInput" type="text" placeholder="メッセージを入力..."
+            class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
+          <button onclick="sendChat()" id="chatSendBtn"
+            class="bg-teal text-white font-bold px-4 py-2.5 rounded-xl text-sm hover:bg-tealdark transition-colors">
+            送信
+          </button>
+        </div>
+        <div id="chatCollectedBar" class="hidden border-t border-gray-100 p-3">
+          <button onclick="submitFromChat()"
+            class="w-full bg-navy text-white font-black py-3 rounded-2xl text-sm hover:bg-navylight transition-colors">
+            🧭 この条件で宿泊エリアを探す
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 入力フォーム -->
     <div id="formSection">
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -225,7 +268,6 @@
                 <option value="8">8泊9日</option>
                 <option value="9">9泊10日</option>
                 <option value="10">10泊11日</option>
-                <option value="14">14泊15日</option>
               </select>
             </div>
           </div>
@@ -406,6 +448,177 @@
     let selectedPurpose = null;
     let selectedMode = 'normal';
 
+    // ─── 入力モード切替 ───
+    let currentInputMode = 'form';
+    function switchInputMode(mode) {
+      currentInputMode = mode;
+      const tabForm = document.getElementById('tabForm');
+      const tabChat = document.getElementById('tabChat');
+      const chatSection = document.getElementById('chatSection');
+      const formSection = document.getElementById('formSection');
+      if (mode === 'chat') {
+        tabChat.classList.add('bg-white','text-navy','shadow-sm');
+        tabChat.classList.remove('text-gray-500');
+        tabForm.classList.remove('bg-white','text-navy','shadow-sm');
+        tabForm.classList.add('text-gray-500');
+        chatSection.classList.remove('hidden');
+        formSection.classList.add('hidden');
+        if (chatHistory.length === 0) initChat();
+      } else {
+        tabForm.classList.add('bg-white','text-navy','shadow-sm');
+        tabForm.classList.remove('text-gray-500');
+        tabChat.classList.remove('bg-white','text-navy','shadow-sm');
+        tabChat.classList.add('text-gray-500');
+        chatSection.classList.add('hidden');
+        formSection.classList.remove('hidden');
+      }
+    }
+
+    // ─── チャット機能 ───
+    let chatHistory = [];
+    let collectedData = null;
+
+    function initChat() {
+      chatHistory = [];
+      collectedData = null;
+      document.getElementById('chatMessages').innerHTML = '';
+      document.getElementById('chatCollectedBar').classList.add('hidden');
+      addChatMessage('assistant',
+        'こんにちは！旅行コンシェルジュのチャッピーです🧭\n\nどんな旅を計画していますか？まず、旅のタイプを教えてください。\n\n🌊 **観光旅行**（AIが行き先を提案）\n🏠 **帰省・長距離移動**（目的地が決まっている）');
+    }
+
+    function addChatMessage(role, text) {
+      const box = document.getElementById('chatMessages');
+      const isUser = role === 'user';
+      const div = document.createElement('div');
+      div.className = `flex ${isUser ? 'justify-end' : 'justify-start'} items-end gap-2`;
+      const bubble = document.createElement('div');
+      bubble.className = isUser
+        ? 'bg-navy text-white text-sm px-4 py-2.5 rounded-2xl rounded-br-sm max-w-[80%] leading-relaxed'
+        : 'bg-gray-100 text-gray-800 text-sm px-4 py-2.5 rounded-2xl rounded-bl-sm max-w-[85%] leading-relaxed whitespace-pre-line';
+      // markdownの**bold**を変換
+      bubble.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      if (!isUser) {
+        const avatar = document.createElement('div');
+        avatar.className = 'text-lg shrink-0 mb-0.5';
+        avatar.textContent = '🤖';
+        div.appendChild(avatar);
+      }
+      div.appendChild(bubble);
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function addChatTyping() {
+      const box = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.id = 'typingIndicator';
+      div.className = 'flex justify-start items-end gap-2';
+      div.innerHTML = '<div class="text-lg shrink-0 mb-0.5">🤖</div><div class="bg-gray-100 text-gray-400 text-sm px-4 py-2.5 rounded-2xl rounded-bl-sm">入力中...</div>';
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function removeChatTyping() {
+      const t = document.getElementById('typingIndicator');
+      if (t) t.remove();
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      addChatMessage('user', text);
+      chatHistory.push({ role: 'user', content: text });
+      input.value = '';
+      input.disabled = true;
+      document.getElementById('chatSendBtn').disabled = true;
+      addChatTyping();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: chatHistory })
+        });
+        removeChatTyping();
+        if (!res.ok) {
+          const err = await res.json().catch(()=>({}));
+          addChatMessage('assistant', `⚠️ エラーが発生しました：${err.detail || res.status}`);
+        } else {
+          const data = await res.json();
+          addChatMessage('assistant', data.reply);
+          chatHistory.push({ role: 'assistant', content: data.reply });
+          if (data.collected) {
+            collectedData = data.collected;
+            document.getElementById('chatCollectedBar').classList.remove('hidden');
+          }
+        }
+      } catch(e) {
+        removeChatTyping();
+        addChatMessage('assistant', `⚠️ 通信エラーが発生しました。もう一度お試しください。`);
+      }
+      input.disabled = false;
+      document.getElementById('chatSendBtn').disabled = false;
+      input.focus();
+    }
+
+    async function submitFromChat() {
+      if (!collectedData) return;
+      const d = collectedData;
+
+      // フォームに値を流し込む
+      document.getElementById('origin').value = d.origin || '';
+      document.getElementById('destination').value = d.destination || '';
+      const dest2El = document.getElementById('destination2');
+      if (dest2El) dest2El.value = d.destination2 || '';
+      document.getElementById('direction').value = d.direction || '';
+      document.getElementById('travel_date').value = d.travel_date || '';
+      document.getElementById('nights').value = d.nights || 1;
+      document.getElementById('adults').value = d.adults || 2;
+      document.getElementById('children').value = d.children || '';
+
+      // モード
+      const modeBtns = document.querySelectorAll('.mode-btn');
+      modeBtns.forEach(b => {
+        if (b.dataset.mode === d.mode) b.click();
+      });
+
+      // グループタイプ
+      document.getElementById('group_type').value = d.group_type || 'family';
+      updateGroupType();
+
+      // 予算
+      const budgetRadio = document.querySelector(`input[name="budget"][value="${d.budget || 'mid'}"]`);
+      if (budgetRadio) {
+        budgetRadio.checked = true;
+        budgetRadio.dispatchEvent(new Event('change'));
+      }
+
+      // 目的
+      const purposeOpts = document.querySelectorAll('.purpose-btn');
+      purposeOpts.forEach(b => {
+        if (b.dataset.purpose === d.purpose) {
+          selectPurpose(b, d.purpose);
+        }
+      });
+
+      // 往復・燃費
+      const rtEl = document.getElementById('round_trip');
+      if (rtEl) rtEl.checked = d.round_trip || false;
+      const feEl = document.getElementById('fuel_efficiency');
+      if (feEl) feEl.value = d.fuel_efficiency || 15;
+      const etcEl = document.getElementById('has_etc');
+      if (etcEl) etcEl.checked = d.has_etc !== false;
+
+      // タブをフォームに戻してsubmit
+      switchInputMode('form');
+      setTimeout(() => {
+        document.getElementById('mainForm').dispatchEvent(new Event('submit'));
+      }, 100);
+    }
+
     function selectMode(btn) {
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.classList.remove('border-teal','text-teal','bg-teal/5','border-navy','text-navy','bg-navy/5');
@@ -521,6 +734,8 @@
 
       // ローディング表示
       document.getElementById('formSection').classList.add('hidden');
+      document.getElementById('chatSection').classList.add('hidden');
+      document.getElementById('inputModeTabs').classList.add('hidden');
       document.getElementById('loadingSection').classList.remove('hidden');
       document.getElementById('resultSection').classList.add('hidden');
       document.getElementById('errorSection').classList.add('hidden');
@@ -687,7 +902,15 @@
     }
 
     function resetForm() {
-      document.getElementById('formSection').classList.remove('hidden');
+      // 入力モードに応じて表示切替
+      if (currentInputMode === 'chat') {
+        document.getElementById('chatSection').classList.remove('hidden');
+        document.getElementById('formSection').classList.add('hidden');
+      } else {
+        document.getElementById('formSection').classList.remove('hidden');
+        document.getElementById('chatSection').classList.add('hidden');
+      }
+      document.getElementById('inputModeTabs').classList.remove('hidden');
       document.getElementById('resultSection').classList.add('hidden');
       document.getElementById('errorSection').classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
