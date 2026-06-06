@@ -30,10 +30,64 @@ AREAS_DB = json.loads((Path(__file__).parent / "data" / "areas_db.json").read_te
 def get_all_areas():
     areas = []
     for region in AREAS_DB["regions"]:
+        if not isinstance(region.get("areas"), list):
+            continue
         for area in region["areas"]:
+            area = dict(area)
             area["region"] = region["label"]
+            area["region_id"] = region["id"]
             areas.append(area)
     return areas
+
+
+# 地名→リージョンIDのマッピング
+REGION_KEYWORDS = {
+    "north": ["北海道","青森","岩手","宮城","秋田","山形","福島","仙台","札幌","函館","盛岡","山形","福島","郡山","旭川"],
+    "east":  ["東京","神奈川","埼玉","千葉","茨城","栃木","群馬","山梨","長野","新潟","静岡","愛知","岐阜","三重",
+              "宇都宮","横浜","川崎","さいたま","千葉","水戸","前橋","高崎","甲府","長野","新潟","静岡","名古屋","岐阜","津"],
+    "west":  ["大阪","京都","兵庫","奈良","滋賀","和歌山","鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知",
+              "大阪","京都","神戸","奈良","大津","和歌山","鳥取","松江","岡山","広島","山口","徳島","高松","松山","高知"],
+    "south": ["福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄","北九州","博多","長崎","熊本","大分","宮崎","鹿児島","那覇"],
+}
+
+def detect_region(place: str) -> list[str]:
+    """地名からリージョンIDリストを返す"""
+    matched = []
+    for region_id, keywords in REGION_KEYWORDS.items():
+        if any(kw in place for kw in keywords):
+            matched.append(region_id)
+    return matched if matched else list(REGION_KEYWORDS.keys())  # 不明なら全リージョン
+
+def get_route_region_ids(origin: str, destination: str) -> list[str]:
+    """出発地と目的地の間のリージョンIDを返す（中間リージョンも含む）"""
+    order = ["north", "east", "west", "south"]
+    origin_regions = detect_region(origin)
+    dest_regions = detect_region(destination) if destination else origin_regions
+
+    # 全リージョンIDのインデックス範囲を取得
+    all_indices = set()
+    for r in origin_regions + dest_regions:
+        if r in order:
+            all_indices.add(order.index(r))
+
+    if not all_indices:
+        return order  # フォールバック
+
+    min_idx = min(all_indices)
+    max_idx = max(all_indices)
+    # 出発〜目的地の間のリージョンをすべて含める
+    return [order[i] for i in range(min_idx, max_idx + 1)]
+
+
+def get_filtered_areas(origin: str, destination: str, max_areas: int = 20) -> list:
+    """ルートに関連するエリアだけ返す（最大max_areas件）"""
+    relevant_regions = get_route_region_ids(origin, destination)
+    all_areas = get_all_areas()
+    filtered = [a for a in all_areas if a.get("region_id") in relevant_regions]
+    # 関連リージョンが少なすぎる場合は隣接リージョンも追加
+    if len(filtered) < 10:
+        filtered = all_areas
+    return filtered[:max_areas]
 
 
 class RecommendRequest(BaseModel):
@@ -126,11 +180,13 @@ async def recommend(req: RecommendRequest):
 async def _recommend_inner(req: RecommendRequest):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-    all_areas = get_all_areas()
+    # 出発地・目的地でルート関連エリアに絞り込む（タイムアウト対策）
+    dest_for_filter = req.destination if req.destination else req.direction
+    route_areas = get_filtered_areas(req.origin, dest_for_filter, max_areas=20)
 
     # エリアデータを簡潔な形式でプロンプトに渡す
     areas_summary = []
-    for a in all_areas:
+    for a in route_areas:
         child_score = 0
         fs = a.get("family_score", {})
         if fs:
@@ -193,7 +249,7 @@ async def _recommend_inner(req: RecommendRequest):
 {cost_note if req.mode == "kisei" else ""}
 
 ## エリアデータベース（抜粋・ルート関連エリア優先）
-{json.dumps(areas_summary[:60], ensure_ascii=False, indent=None)}
+{json.dumps(areas_summary, ensure_ascii=False, indent=None)}
 
 ## 指示
 1. 出発地→目的地のルートを地理的に考慮し、中継地として現実的なエリアを選ぶ
