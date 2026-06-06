@@ -58,19 +58,32 @@
     <div class="max-w-5xl mx-auto">
       <div class="text-center mb-10">
         <div class="inline-flex items-center gap-2 bg-teal/10 text-teal text-xs font-bold px-4 py-2 rounded-full mb-6 tracking-widest uppercase">
-          🧭 AI 移動設計コンシェルジュ
+          🗺️ 家族旅行・帰省に特化したAIサービス
         </div>
         <h1 class="text-4xl md:text-6xl font-black text-navy leading-tight mb-4">
-          家族の移動を、<br />まるごと設計する。
+          もう「どこ泊まる？」<br />で悩まない。
         </h1>
         <p class="text-base md:text-xl text-gray-600 leading-relaxed mb-3">
-          出発から帰宅まで、AIが意思決定を全部引き受ける。<br />
-          中継宿・休憩・観光・持ち物まで、これひとつで。
+          出発地と目的を入れるだけで、宿泊エリアが決まる。<br />
+          旅行計画が、5分で終わる。
         </p>
-        <p class="text-sm text-teal font-bold mb-8">人気ランキングではなく、今のあなた家族に最適な「狙い目」を提示します。</p>
-        <a href="#request" class="inline-block bg-brand text-white font-bold text-base px-8 py-4 rounded-full hover:bg-branddark transition-colors shadow-lg shadow-orange-200 mb-10">
-          使ってみたい → 先行登録する
-        </a>
+        <p class="text-sm text-teal font-bold mb-6">人気ランキングではなく「今のあなた家族の狙い目」を提示します。</p>
+
+        <!-- こんな方向け -->
+        <div class="inline-block bg-white border border-gray-200 rounded-2xl px-6 py-4 mb-8 text-left shadow-sm">
+          <p class="text-xs font-black text-gray-400 mb-3 uppercase tracking-wider">こんな方向け</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-black">✓</span> 年2回以上、車で帰省・旅行する</div>
+            <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-black">✓</span> 子供連れで「どこで泊まるか」毎回悩む</div>
+            <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-black">✓</span> じゃらん・楽天で「県」を先に選ぶのが面倒</div>
+          </div>
+        </div>
+
+        <div class="block">
+          <a href="#request" class="inline-block bg-brand text-white font-bold text-base px-8 py-4 rounded-full hover:bg-branddark transition-colors shadow-lg shadow-orange-200 mb-10">
+            無料で先行登録する →
+          </a>
+        </div>
       </div>
 
       <!-- App Mock -->
@@ -376,6 +389,34 @@
           <div class="bg-red-50 text-red-500 font-bold px-3 py-2 rounded-lg">価格高騰率</div>
         </div>
         <p class="text-xs text-gray-400 text-center mt-4">💡 このウェイトはあなたの好みに合わせて調整できます。<br/>温泉重視・コスパ重視・子連れ重視など、自分だけのスコアに。</p>
+
+        <!-- スコア根拠 -->
+        <div class="mt-6 bg-gray-50 rounded-2xl p-5 border border-gray-100">
+          <p class="text-xs font-black text-gray-500 mb-3 uppercase tracking-wider">📊 スコアの根拠データ（β版・順次精度向上中）</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-center">
+            <div class="bg-white rounded-xl p-3 border border-gray-200">
+              <p class="text-xl mb-1">🔍</p>
+              <p class="font-bold text-gray-700">Google検索量</p>
+              <p class="text-gray-400 mt-0.5">トレンド増減率</p>
+            </div>
+            <div class="bg-white rounded-xl p-3 border border-gray-200">
+              <p class="text-xl mb-1">📺</p>
+              <p class="font-bold text-gray-700">YouTube投稿数</p>
+              <p class="text-gray-400 mt-0.5">宿泊レビュー件数</p>
+            </div>
+            <div class="bg-white rounded-xl p-3 border border-gray-200">
+              <p class="text-xl mb-1">💴</p>
+              <p class="font-bold text-gray-700">宿泊料金推移</p>
+              <p class="text-gray-400 mt-0.5">先月比の高騰率</p>
+            </div>
+            <div class="bg-white rounded-xl p-3 border border-gray-200">
+              <p class="text-xl mb-1">⭐</p>
+              <p class="font-bold text-gray-700">口コミ評価</p>
+              <p class="text-gray-400 mt-0.5">子連れ満足度</p>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 text-center mt-3">β版ではAI推定値を使用。Phase1（2026年秋）以降、各種APIと連携して実データに切り替え予定。</p>
+        </div>
       </div>
 
       <div class="fade-in grid md:grid-cols-3 gap-4">
@@ -430,20 +471,22 @@
         <h2 class="text-3xl md:text-4xl font-black text-navy">TRIPOSの3つのコア機能</h2>
       </div>
       <div class="grid md:grid-cols-3 gap-6">
+        <!-- 1位：行きたいリストを前面に -->
+        <div class="fade-in card-hover bg-teal/5 rounded-2xl p-7 border-2 border-teal/30 relative">
+          <div class="absolute -top-3 left-5 bg-teal text-white text-xs font-black px-3 py-1 rounded-full">一番の強み</div>
+          <div class="text-4xl mb-5">⭐</div>
+          <h3 class="font-bold text-navy text-lg mb-3">行きたい宿<br />リスト</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">YouTubeやInstagramで見た宿を保存。次の旅行でルート上にあれば自動で優先提案。<span class="font-bold text-navy">旅の記憶が、そのまま財産になる。</span></p>
+        </div>
         <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
           <div class="text-4xl mb-5">🗺️</div>
           <h3 class="font-bold text-navy text-lg mb-3">ルート逆算<br />エリア提案</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">出発地×目的地から宿泊エリアをAIが逆算。疲労・距離・子供負担・今の魅力度スコアで最適な中継地を提示。</p>
-        </div>
-        <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
-          <div class="text-4xl mb-5">⭐</div>
-          <h3 class="font-bold text-navy text-lg mb-3">行きたい宿<br />リスト</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">YouTubeで見た宿、気になったホテルをリストに保存。次の旅行でルート上にあれば自動で優先提案。旅の記憶が財産になる。</p>
+          <p class="text-sm text-gray-500 leading-relaxed">出発地×目的から宿泊エリアを逆算。「県を先に選ぶ」不要。距離・子供負担・今の狙い目スコアで最適な中継地を提示。</p>
         </div>
         <div class="fade-in card-hover bg-blue-50 rounded-2xl p-7 border border-blue-100">
           <div class="text-4xl mb-5">📈</div>
           <h3 class="font-bold text-navy text-lg mb-3">使うほど<br />賢くなる</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">旅行履歴・好み・子供の成長を記録。「前回姫路宿泊の満足度が高かった」をAIが学習して次回に活かす。</p>
+          <p class="text-sm text-gray-500 leading-relaxed">旅行履歴・子供の成長を記録。「前回姫路が良かった」をAIが覚えて次回に活かす。3年分溜まると手放せなくなる。</p>
         </div>
       </div>
     </div>
@@ -512,8 +555,17 @@
       <div class="fade-in bg-white border border-gray-200 rounded-3xl p-8 md:p-10 shadow-xl">
         <div class="text-center mb-8">
           <span class="text-4xl block mb-4">✋</span>
-          <h2 class="text-2xl font-black text-navy mb-2">先行登録 / 使ってみたい！<br />を教えてください</h2>
-          <p class="text-sm text-gray-500">ご登録いただいた方にリリース時に優先でご案内します。</p>
+          <h2 class="text-2xl font-black text-navy mb-2">無料で先行登録する</h2>
+          <p class="text-sm text-gray-500 mb-4">正式リリース時に優先案内。登録者限定の特典があります。</p>
+          <!-- 特典リスト -->
+          <div class="bg-teal/5 border border-teal/20 rounded-2xl p-4 text-left mb-2">
+            <p class="text-xs font-black text-teal mb-2 uppercase tracking-wider">🎁 先行登録者限定特典</p>
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-bold">✓</span> エリア提案を<span class="font-bold">10回分無料</span>（正式版は月額予定）</div>
+              <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-bold">✓</span> <span class="font-bold">「今が狙い目エリア」ランキング</span>を先行公開</div>
+              <div class="flex items-center gap-2 text-sm text-gray-700"><span class="text-teal font-bold">✓</span> 行きたい宿リスト機能の<span class="font-bold">β版を先行利用</span></div>
+            </div>
+          </div>
         </div>
         <form id="requestForm" class="space-y-5">
           <div>
