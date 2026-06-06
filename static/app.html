@@ -47,37 +47,56 @@
     <a href="/lp" class="ml-auto text-white/50 text-xs hover:text-white/80 transition-colors">LPを見る</a>
   </header>
 
-  <main class="max-w-2xl mx-auto px-4 py-8">
+  <main class="max-w-2xl mx-auto px-4 py-6">
+
+    <!-- アプリ説明バナー -->
+    <div id="aboutBanner" class="bg-gradient-to-br from-navy to-navylight text-white rounded-3xl p-5 mb-5">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <p class="font-black text-base mb-0.5">🧭 TRIPOSとは？</p>
+          <p class="text-white/60 text-xs">β版・完全無料で使えます</p>
+        </div>
+        <button onclick="document.getElementById('aboutBanner').style.display='none'"
+          class="text-white/40 hover:text-white/80 text-lg leading-none ml-4">✕</button>
+      </div>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-start gap-2 text-sm">
+          <span class="text-teal font-black shrink-0">✓</span>
+          <p class="text-white/90 leading-snug"><span class="font-bold">「どこに泊まるか」を自分で決めなくていい。</span>出発地と目的地（または旅の目的）を入れるだけで、AIが最適なエリアを提案します。</p>
+        </div>
+        <div class="flex items-start gap-2 text-sm">
+          <span class="text-teal font-black shrink-0">✓</span>
+          <p class="text-white/90 leading-snug"><span class="font-bold">人気ランキングではなく「今のあなたに合う」場所を探す。</span>混雑・価格高騰・子連れ適性を独自スコアで評価します。</p>
+        </div>
+        <div class="flex items-start gap-2 text-sm">
+          <span class="text-teal font-black shrink-0">✓</span>
+          <p class="text-white/90 leading-snug"><span class="font-bold">帰省の中間地点探しにも対応。</span>長距離移動で「どこで1泊するか」の答えをルートから逆算します。</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-2">
+        <span class="text-xs text-white/60">現在β版（無料）</span>
+        <span class="text-white/30 text-xs">·</span>
+        <span class="text-xs text-white/60">125エリア対応</span>
+        <span class="text-white/30 text-xs">·</span>
+        <span class="text-xs text-white/60">Claude AI搭載</span>
+      </div>
+    </div>
 
     <!-- 入力フォーム -->
     <div id="formSection">
       <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
-        <h2 class="font-black text-navy text-lg mb-1">旅のルートを入力</h2>
-        <p class="text-xs text-gray-400 mb-5">AIが最適な宿泊エリアを逆算提案します</p>
+        <h2 class="font-black text-navy text-lg mb-1">旅の条件を入力</h2>
+        <p class="text-xs text-gray-400 mb-5">AIが最適な宿泊エリアを提案します</p>
 
         <form id="mainForm" class="space-y-4">
 
-          <!-- 出発地・目的地 -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">📍 出発地 <span class="text-brand">*</span></label>
-              <input id="origin" type="text" placeholder="例：宇都宮" required
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-600 mb-1">🏁 目的地 <span class="text-brand">*</span></label>
-              <input id="destination" type="text" placeholder="例：大阪" required
-                class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
-            </div>
-          </div>
-
-          <!-- モード選択 -->
+          <!-- モード選択（最初に選ばせる） -->
           <div>
             <label class="block text-xs font-bold text-gray-600 mb-2">🚗 旅のタイプ <span class="text-brand">*</span></label>
             <div class="grid grid-cols-2 gap-2">
               <button type="button" data-mode="normal" onclick="selectMode(this)"
                 class="mode-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-3 text-center text-xs font-bold transition-colors">
-                🗺️ 観光旅行<br/><span class="font-normal text-gray-400">途中も楽しみたい</span>
+                🗺️ 観光旅行<br/><span class="font-normal text-gray-400">行き先もAIに提案してもらう</span>
               </button>
               <button type="button" data-mode="kisei" onclick="selectMode(this)"
                 class="mode-btn border-2 border-gray-200 text-gray-600 rounded-xl py-3 text-center text-xs font-bold hover:border-navy hover:text-navy transition-colors">
@@ -85,6 +104,28 @@
               </button>
             </div>
             <input type="hidden" id="mode" value="normal" />
+          </div>
+
+          <!-- 出発地 + 目的地（モードで切り替え） -->
+          <div id="originRow">
+            <label class="block text-xs font-bold text-gray-600 mb-1">📍 出発地 <span class="text-brand">*</span></label>
+            <input id="origin" type="text" placeholder="例：宇都宮、千葉、東京" required
+              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+          </div>
+
+          <!-- 帰省モード時のみ：目的地 -->
+          <div id="destinationRow" class="hidden">
+            <label class="block text-xs font-bold text-gray-600 mb-1">🏁 目的地 <span class="text-brand">*</span></label>
+            <input id="destination" type="text" placeholder="例：大阪、広島、福岡"
+              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+          </div>
+
+          <!-- 観光モード時のみ：方面の希望 -->
+          <div id="directionRow">
+            <label class="block text-xs font-bold text-gray-600 mb-1">🧭 方面の希望 <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
+            <input id="direction" type="text" placeholder="例：西日本・海沿い・温泉地など"
+              class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal" />
+            <p class="text-xs text-gray-400 mt-1">未入力でもAIが旅の目的・同行者から最適なエリアを提案します</p>
           </div>
 
           <!-- 旅の目的 -->
@@ -288,20 +329,34 @@
         b.classList.remove('border-teal','text-teal','bg-teal/5','border-navy','text-navy','bg-navy/5');
         b.classList.add('border-gray-200','text-gray-600');
       });
-      btn.classList.add(btn.dataset.mode === 'kisei' ? 'border-navy' : 'border-teal',
-                        btn.dataset.mode === 'kisei' ? 'text-navy' : 'text-teal',
-                        btn.dataset.mode === 'kisei' ? 'bg-navy/5' : 'bg-teal/5');
+      const isKisei = btn.dataset.mode === 'kisei';
+      btn.classList.add(isKisei ? 'border-navy' : 'border-teal',
+                        isKisei ? 'text-navy' : 'text-teal',
+                        isKisei ? 'bg-navy/5' : 'bg-teal/5');
       btn.classList.remove('border-gray-200','text-gray-600');
       selectedMode = btn.dataset.mode;
       document.getElementById('mode').value = selectedMode;
-      // 帰省モードは目的選択不要
+
+      const destRow = document.getElementById('destinationRow');
+      const dirRow = document.getElementById('directionRow');
       const ps = document.getElementById('purposeSection');
-      if (selectedMode === 'kisei') {
+      const destInput = document.getElementById('destination');
+
+      if (isKisei) {
+        // 帰省モード：目的地入力あり・方面なし・目的選択グレーアウト
+        destRow.classList.remove('hidden');
+        dirRow.classList.add('hidden');
+        destInput.setAttribute('required','');
         ps.style.opacity = '0.4';
         ps.style.pointerEvents = 'none';
         document.getElementById('purpose').value = '帰省';
         document.getElementById('purpose').removeAttribute('required');
       } else {
+        // 観光モード：目的地なし・方面あり・目的選択必須
+        destRow.classList.add('hidden');
+        dirRow.classList.remove('hidden');
+        destInput.removeAttribute('required');
+        destInput.value = '';
         ps.style.opacity = '1';
         ps.style.pointerEvents = '';
         document.getElementById('purpose').value = selectedPurpose || '';
@@ -390,7 +445,10 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            origin, destination, purpose, travel_date, nights, adults, children, budget,
+            origin,
+            destination: document.getElementById('destination').value.trim(),
+            direction: document.getElementById('direction').value.trim(),
+            purpose, travel_date, nights, adults, children, budget,
             mode: document.getElementById('mode').value || 'normal',
             group_type: document.getElementById('group_type').value || 'family',
             weight_family: parseInt(document.getElementById('weight_family').value),

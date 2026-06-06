@@ -38,7 +38,8 @@ def get_all_areas():
 
 class RecommendRequest(BaseModel):
     origin: str           # 出発地（例：宇都宮）
-    destination: str      # 目的地（例：大阪）
+    destination: str = "" # 目的地（帰省モードのみ必須）
+    direction: str = ""   # 方面の希望（観光モード・任意）
     purpose: str          # 旅の目的（観光/グルメ/温泉/レジャー/帰省）
     travel_date: str      # 出発日（例：2026-08-02）
     adults: int = 2
@@ -94,7 +95,10 @@ async def recommend(req: RecommendRequest):
 
     mode_note = ""
     if req.mode == "kisei":
-        mode_note = "※帰省・長距離モード：観光目的ではなく移動効率重視。出発地〜目的地の中間地点として距離的に適切で、疲れを取れる宿があるエリアを優先すること。"
+        mode_note = "※帰省・長距離モード：観光目的ではなく移動効率重視。出発地〜目的地の距離を考慮し、中間地点として適切なエリアを優先すること。疲れを取れる宿が多いエリアを重視。"
+    else:
+        dest_note = f"方面の希望：{req.direction}" if req.direction else "方面の希望：特になし（AIが最適なエリアを自由に提案）"
+        mode_note = f"※観光旅行モード：目的地は決まっていない。出発地から車で現実的に行ける範囲で、旅の目的・同行者に最もマッチするエリアをAIが提案すること。{dest_note}"
 
     group_labels = {"family":"子連れ家族", "couple":"カップル（大人2人）", "friends":"複数人グループ（子供なし）", "solo":"ひとり旅"}
     group_note = group_labels.get(req.group_type, req.group_type)
@@ -109,7 +113,7 @@ async def recommend(req: RecommendRequest):
 
 ## 旅行条件
 - 出発地：{req.origin}
-- 目的地：{req.destination}
+- 目的地：{req.destination if req.destination else "未定（AIが提案）"}
 - 旅の目的：{req.purpose}
 - 出発日：{req.travel_date}
 - 同行者：{group_note}
