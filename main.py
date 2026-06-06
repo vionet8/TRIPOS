@@ -79,7 +79,7 @@ PLACE_TO_SUBREGION = {
     "okinawa": ["沖縄","那覇","石垣","宮古","沖縄本島"],
 }
 
-def detect_subregion(place: str) -> str | None:
+def detect_subregion(place: str) -> Optional[str]:
     """地名からサブリージョンIDを返す"""
     for sub_id, keywords in PLACE_TO_SUBREGION.items():
         if any(kw in place for kw in keywords):
