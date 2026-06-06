@@ -57,6 +57,14 @@ class RecommendRequest(BaseModel):
     has_etc: bool = True           # ETC割引あり
 
 
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
+
+@app.head("/ping")
+async def ping_head():
+    return {}
+
 @app.get("/")
 async def index():
     html = (Path(__file__).parent / "static" / "app.html").read_text(encoding="utf-8")
