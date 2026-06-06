@@ -245,7 +245,7 @@ async def _recommend_inner(req: RecommendRequest):
 
     try:
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-6",
             max_tokens=4000,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -625,7 +625,7 @@ async def chat(req: ChatRequest):
 
     try:
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-6",
             max_tokens=1000,
             system=system_prompt,
             messages=messages_for_api
