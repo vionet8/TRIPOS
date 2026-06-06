@@ -464,6 +464,71 @@ async def admin_subscribers(key: str = ""):
 
 
 # ─────────────────────────────────────────
+# ユーザー認証（メールアドレスでID発行）
+# ─────────────────────────────────────────
+import hashlib
+import uuid as _uuid
+
+class LoginRequest(BaseModel):
+    email: str
+
+@app.post("/api/user/login")
+async def user_login(req: LoginRequest):
+    """メールアドレスでユーザーIDを発行/取得する（パスワード不要）"""
+    import storage as _storage
+    email = req.email.strip().lower()
+    if not email or "@" not in email:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="メールアドレスが無効です")
+
+    # メールアドレスをキーにユーザーIDを検索/作成
+    key = f"tripos_user_email_{hashlib.sha256(email.encode()).hexdigest()[:16]}"
+    existing = _storage.load(key)
+    if existing and isinstance(existing, dict):
+        user_id = existing["user_id"]
+    else:
+        user_id = str(_uuid.uuid4())[:12]
+        _storage.save(key, {"user_id": user_id, "email": email})
+        # ユーザーデータ初期化
+        _storage.save(f"tripos_user_{user_id}", {"wishlist": [], "history": []})
+
+    return {"user_id": user_id, "email": email}
+
+@app.get("/api/user/{user_id}/data")
+async def get_user_data(user_id: str):
+    """ユーザーデータ取得（wishlist・history）"""
+    import storage as _storage
+    data = _storage.load(f"tripos_user_{user_id}")
+    if not data or not isinstance(data, dict):
+        return {"wishlist": [], "history": []}
+    return data
+
+@app.post("/api/user/{user_id}/wishlist")
+async def save_wishlist(user_id: str, body: dict):
+    """wishlistを保存"""
+    import storage as _storage
+    data = _storage.load(f"tripos_user_{user_id}")
+    if not data or not isinstance(data, dict):
+        data = {"wishlist": [], "history": []}
+    data["wishlist"] = body.get("wishlist", [])
+    _storage.save(f"tripos_user_{user_id}", data)
+    return {"ok": True}
+
+@app.post("/api/user/{user_id}/history")
+async def save_history(user_id: str, body: dict):
+    """旅行履歴を追加"""
+    import storage as _storage
+    data = _storage.load(f"tripos_user_{user_id}")
+    if not data or not isinstance(data, dict):
+        data = {"wishlist": [], "history": []}
+    history = data.get("history", [])
+    history.insert(0, body.get("entry", {}))
+    data["history"] = history[:20]  # 最大20件
+    _storage.save(f"tripos_user_{user_id}", data)
+    return {"ok": True}
+
+
+# ─────────────────────────────────────────
 # ヒアリングチャットAPI
 # ─────────────────────────────────────────
 class ChatMessage(BaseModel):

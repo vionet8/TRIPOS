@@ -44,8 +44,47 @@
       <p class="font-black tracking-tight text-base leading-tight">TRIPOS</p>
       <p class="text-white/50 text-xs leading-none">家族の移動を、まるごと設計する。</p>
     </div>
-    <a href="/lp" class="ml-auto text-white/50 text-xs hover:text-white/80 transition-colors">LPを見る</a>
+    <div class="ml-auto flex items-center gap-3">
+      <button onclick="openLoginModal()" id="loginBtn"
+        class="text-white/50 text-xs hover:text-white/80 transition-colors flex items-center gap-1">
+        <span>👤</span><span id="loginBtnLabel">ログイン</span>
+      </button>
+      <a href="/lp" class="text-white/30 text-xs hover:text-white/60 transition-colors">LP</a>
+    </div>
   </header>
+
+  <!-- ログインモーダル -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+      <div id="loginView">
+        <p class="font-black text-navy text-lg mb-1">📱 記録を引き継ぐ</p>
+        <p class="text-xs text-gray-400 mb-4">メールアドレスを登録すると、ブラウザを変えても行きたいリスト・旅行履歴を引き継げます。パスワード不要です。</p>
+        <input id="loginEmail" type="email" placeholder="メールアドレスを入力"
+          class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/30 mb-3" />
+        <button onclick="doLogin()"
+          class="w-full bg-navy text-white font-bold py-3 rounded-xl text-sm hover:bg-navylight transition-colors mb-2">
+          ログイン / 新規登録
+        </button>
+        <p class="text-xs text-gray-400 text-center mb-3">氏名・住所・クレジットカードは不要です</p>
+        <button onclick="closeLoginModal()" class="w-full text-gray-400 text-xs py-2">キャンセル</button>
+      </div>
+      <div id="loginSuccess" class="hidden text-center">
+        <div class="text-4xl mb-3">✅</div>
+        <p class="font-black text-navy mb-1">ログイン完了！</p>
+        <p class="text-xs text-gray-500 mb-4">このブラウザと紐付けました。<br/>別のブラウザでも同じメールアドレスでログインすれば引き継げます。</p>
+        <button onclick="closeLoginModal()" class="bg-teal text-white font-bold px-6 py-2.5 rounded-xl text-sm">OK</button>
+      </div>
+      <div id="loginLoggedIn" class="hidden">
+        <p class="font-black text-navy text-lg mb-1">👤 ログイン中</p>
+        <p id="loginCurrentEmail" class="text-xs text-gray-500 mb-4"></p>
+        <button onclick="doLogout()"
+          class="w-full border border-gray-200 text-gray-500 font-bold py-3 rounded-xl text-sm hover:border-red-300 hover:text-red-500 transition-colors mb-2">
+          ログアウト
+        </button>
+        <button onclick="closeLoginModal()" class="w-full text-gray-400 text-xs py-2">閉じる</button>
+      </div>
+    </div>
+  </div>
 
   <main class="max-w-2xl mx-auto px-4 py-6">
 
@@ -890,11 +929,111 @@
       `;
     }
 
-    function addToWishlist(id, name) {
+    // ─── ログイン管理 ───
+    function getCurrentUser() {
+      const uid = localStorage.getItem('tripos_user_id');
+      const email = localStorage.getItem('tripos_user_email');
+      return uid ? { user_id: uid, email } : null;
+    }
+
+    function updateLoginBtn() {
+      const user = getCurrentUser();
+      const label = document.getElementById('loginBtnLabel');
+      if (user) {
+        label.textContent = user.email.split('@')[0];
+      } else {
+        label.textContent = 'ログイン';
+      }
+    }
+
+    function openLoginModal() {
+      const user = getCurrentUser();
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('loginSuccess').classList.add('hidden');
+      document.getElementById('loginLoggedIn').classList.add('hidden');
+      if (user) {
+        document.getElementById('loginCurrentEmail').textContent = user.email;
+        document.getElementById('loginLoggedIn').classList.remove('hidden');
+      } else {
+        document.getElementById('loginView').classList.remove('hidden');
+      }
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('正しいメールアドレスを入力してください');
+        return;
+      }
+      try {
+        const res = await fetch('/api/user/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        if (!res.ok) throw new Error('ログイン失敗');
+        const data = await res.json();
+        localStorage.setItem('tripos_user_id', data.user_id);
+        localStorage.setItem('tripos_user_email', data.email);
+
+        // サーバーからwishlistを取得してlocalStorageに反映
+        const userRes = await fetch(`/api/user/${data.user_id}/data`);
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          if (userData.wishlist && userData.wishlist.length > 0) {
+            localStorage.setItem('tripos_wishlist', JSON.stringify(userData.wishlist));
+          } else {
+            // ローカルのwishlistをサーバーにアップロード
+            const localList = JSON.parse(localStorage.getItem('tripos_wishlist') || '[]');
+            if (localList.length > 0) {
+              await fetch(`/api/user/${data.user_id}/wishlist`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ wishlist: localList })
+              });
+            }
+          }
+        }
+
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('loginSuccess').classList.remove('hidden');
+        updateLoginBtn();
+      } catch(e) {
+        alert('ログインに失敗しました。もう一度お試しください。');
+      }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('tripos_user_id');
+      localStorage.removeItem('tripos_user_email');
+      updateLoginBtn();
+      closeLoginModal();
+    }
+
+    // 起動時にログイン状態を反映
+    updateLoginBtn();
+
+    // ─── Wishlist ───
+    async function addToWishlist(id, name) {
       const list = JSON.parse(localStorage.getItem('tripos_wishlist') || '[]');
       if (!list.find(i => i.id === id)) {
         list.push({ id, name, added: new Date().toISOString().slice(0,10) });
         localStorage.setItem('tripos_wishlist', JSON.stringify(list));
+
+        // ログイン中ならサーバーにも保存
+        const user = getCurrentUser();
+        if (user) {
+          fetch(`/api/user/${user.user_id}/wishlist`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wishlist: list })
+          }).catch(()=>{});
+        }
         alert(`⭐ 「${name}」をリストに追加しました！`);
       } else {
         alert(`「${name}」はすでにリストにあります`);
