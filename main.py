@@ -25,6 +25,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # areas_db をロード
 AREAS_DB = json.loads((Path(__file__).parent / "data" / "areas_db.json").read_text(encoding="utf-8"))
+# routes_db をロード
+ROUTES_DB = json.loads((Path(__file__).parent / "data" / "routes_db.json").read_text(encoding="utf-8"))
 
 # 全エリアをフラットリストに変換
 def get_all_areas():
@@ -153,21 +155,55 @@ def get_intermediate_subregions(origin: str, destination: str, mode: str = "norm
         return SUBREGIIONS_ORDER[start:end + 1]
 
 
-def get_filtered_areas(origin: str, destination: str, mode: str = "normal", max_areas: int = 20) -> list:
-    """ルートの中間エリアに絞り込んで返す"""
-    target_subs = get_intermediate_subregions(origin, destination, mode)
-    all_areas = get_all_areas()
+def match_routes(origin: str, destination: str) -> list:
+    """出発地・目的地にマッチするルートを返す"""
+    matched = []
+    for route in ROUTES_DB["routes"]:
+        o_match = any(kw in origin for kw in route["origin_keywords"])
+        d_match = not destination or any(kw in destination for kw in route["dest_keywords"])
+        # 逆方向も考慮
+        o_rev = destination and any(kw in destination for kw in route["origin_keywords"])
+        d_rev = any(kw in origin for kw in route["dest_keywords"])
+        if (o_match and d_match) or (o_rev and d_rev):
+            matched.append(route)
+    return matched
 
-    # エリアにサブリージョンを付与して絞り込み
+
+def get_filtered_areas(origin: str, destination: str, mode: str = "normal", max_areas: int = 20) -> list:
+    """ルートDBを優先し、なければサブリージョンでフィルタ"""
+    all_areas = get_all_areas()
+    areas_by_pref = {}
+    for a in all_areas:
+        p = a.get("prefecture", "")
+        areas_by_pref.setdefault(p, []).append(a)
+
+    # ① ルートDBでマッチング
+    matched_routes = match_routes(origin, destination) if destination else []
+    if matched_routes:
+        via_prefs = []
+        for r in matched_routes:
+            via_prefs.extend(r.get("via_prefs", []))
+        via_prefs = list(dict.fromkeys(via_prefs))  # 重複除去・順序保持
+
+        filtered = []
+        for pref in via_prefs:
+            # 完全一致 or 前方一致
+            for area in all_areas:
+                a_pref = area.get("prefecture", "")
+                if pref in a_pref or a_pref in pref:
+                    filtered.append(area)
+
+        if len(filtered) >= 8:
+            return filtered[:max_areas]
+
+    # ② フォールバック：サブリージョンで絞り込み
+    target_subs = get_intermediate_subregions(origin, destination, mode)
     filtered = []
     for a in all_areas:
         sub = get_area_subregion(a)
         if sub in target_subs:
-            a = dict(a)
-            a["subregion"] = sub
             filtered.append(a)
 
-    # 足りない場合はリージョン拡張
     if len(filtered) < 8:
         filtered = all_areas
 
@@ -315,6 +351,14 @@ async def _recommend_inner(req: RecommendRequest):
     etc_note = "ETC割引あり（約30〜50%引き）" if req.has_etc else "ETC割引なし"
     cost_note = f"【費用計算】燃費={req.fuel_efficiency}km/L、ガソリン単価=約175円/L、高速料金目安=約25円/km（{etc_note}）。距離を推定して往復のガソリン代・高速代を計算すること。"
 
+    # マッチしたルート情報をプロンプトに含める
+    matched_routes = match_routes(req.origin, req.destination) if req.destination else []
+    route_hint = ""
+    if matched_routes:
+        route_names = "・".join(r["name"] for r in matched_routes)
+        route_times = " / ".join(r["drive_time_note"] for r in matched_routes)
+        route_hint = f"\n## 該当ルート\n- 高速道路：{route_names}\n- 所要時間目安：{route_times}"
+
     prompt = f"""あなたはTRIPOSというAI旅行コンシェルジュです。
 家族の車旅行において、出発地から目的地への移動ルート上で最適な「宿泊エリア」を提案してください。
 
@@ -331,17 +375,19 @@ async def _recommend_inner(req: RecommendRequest):
 {mode_note}
 {family_note}
 {cost_note if req.mode == "kisei" else ""}
+{route_hint}
 
-## エリアデータベース（抜粋・ルート関連エリア優先）
+## エリアデータベース（ルート沿線エリア）
 {json.dumps(areas_summary, ensure_ascii=False, indent=None)}
 
 ## 指示
-1. 出発地→目的地のルートを地理的に考慮し、中継地として現実的なエリアを選ぶ
-2. 旅の目的・子連れ条件・予算に合うエリアを優先する
-3. 「人気No.1」ではなく「今のこの家族に最適な狙い目」を選ぶ
-4. 必ず行きの提案を3エリア提案すること
-5. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること（行きと異なるルート・エリアを推奨）
-6. 帰省モードの場合、費用サマリー（距離・ガソリン代・高速代・宿泊代の合計）を必ず計算すること
+1. 出発地→宿泊エリアの所要時間（高速利用）を必ず計算すること（例：出発地から約2時間など）
+2. 宿泊エリア→目的地の残り時間も計算すること
+3. 子供の疲労を考慮した理想的な休憩タイミングを意識すること（2〜3時間ドライブで1泊が理想）
+4. 「人気No.1」ではなく「今のこの家族に最適な狙い目」を選ぶ
+5. 必ず行きの提案を3エリア提案すること
+6. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること
+7. 帰省モードの場合、費用サマリーを計算すること
 
 ## 回答形式（JSON形式で返すこと、他の文章は不要）
 {{
@@ -352,6 +398,9 @@ async def _recommend_inner(req: RecommendRequest):
       "name": "エリア名",
       "prefecture": "都道府県",
       "score": 85,
+      "drive_time_from_origin": "約2時間30分",
+      "drive_time_to_dest": "約2時間（残り）",
+      "highway_via": "東名高速経由",
       "score_breakdown": {{
         "popularity": 70,
         "satisfaction": 85,

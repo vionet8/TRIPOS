@@ -879,6 +879,28 @@
         ? `<span class="text-xs bg-teal/10 text-teal px-2 py-0.5 rounded-full font-bold">あなたのリストにあります ⭐</span>`
         : '';
 
+      // 所要時間バー（メイン表示）
+      const driveTimeBanner = (area.drive_time_from_origin || area.drive_time_to_dest) ? `
+        <div class="bg-navy/5 rounded-2xl px-4 py-3 mb-3 flex items-center gap-4 text-sm">
+          <div class="flex items-center gap-1.5 flex-1">
+            <span class="text-lg">🚗</span>
+            <div>
+              <p class="text-xs text-gray-400">出発地から</p>
+              <p class="font-black text-navy">${area.drive_time_from_origin || '—'}</p>
+            </div>
+          </div>
+          <div class="text-gray-300 text-lg">→ 泊 →</div>
+          <div class="flex items-center gap-1.5 flex-1 justify-end text-right">
+            <div>
+              <p class="text-xs text-gray-400">目的地まで</p>
+              <p class="font-black text-navy">${area.drive_time_to_dest || '—'}</p>
+            </div>
+            <span class="text-lg">🏠</span>
+          </div>
+        </div>
+        ${area.highway_via ? `<p class="text-xs text-gray-400 mb-2">🛣 ${area.highway_via}</p>` : ''}
+      ` : '';
+
       const breakdown = area.score_breakdown ? `
         <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-500">
           <div class="text-center"><p class="text-gray-400">人気度</p><p class="font-bold text-gray-700">${area.score_breakdown.popularity}</p></div>
@@ -905,6 +927,8 @@
           <div class="score-bar mb-3">
             <div class="score-fill ${scoreBarColor}" style="width:${area.score}%"></div>
           </div>
+
+          ${driveTimeBanner}
 
           <p class="text-sm text-brand font-bold mb-2">✨ ${area.highlight || ''}</p>
           <p class="text-sm text-gray-600 leading-relaxed mb-3">${area.reason}</p>

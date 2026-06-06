@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-06-06",
+    "note": "主要高速ルートと沿線エリアのDB。出発地・目的地からルートを特定し、中間エリアを絞り込む"
+  },
+  "routes": [
+    {
+      "id": "tomei",
+      "name": "東名・新東名ルート",
+      "highway": "東名高速・新東名高速",
+      "origin_keywords": ["東京","神奈川","埼玉","千葉","横浜","川崎","さいたま","宇都宮","茨城","栃木","群馬","水戸","前橋","宇都宮","千葉"],
+      "dest_keywords": ["大阪","京都","兵庫","奈良","滋賀","和歌山","広島","岡山","福岡","九州","名古屋","愛知"],
+      "area_ids": ["atami_izu", "shizuoka", "hamamatsu", "nagoya", "inuyama", "shima_ise"],
+      "via_prefs": ["静岡県", "愛知県", "三重県"],
+      "drive_time_note": "東京〜大阪 約5.5〜6.5時間（新東名経由）"
+    },
+    {
+      "id": "chuo",
+      "name": "中央道ルート",
+      "highway": "中央自動車道",
+      "origin_keywords": ["東京","神奈川","埼玉","千葉","横浜","川崎","さいたま","宇都宮","茨城","栃木","群馬"],
+      "dest_keywords": ["大阪","京都","兵庫","奈良","名古屋","愛知","岐阜","長野"],
+      "area_ids": ["fujigoko", "kiyosato", "suwa_諏訪", "matsumoto", "kiso_木曽", "ena_恵那", "nagoya"],
+      "via_prefs": ["山梨県", "長野県", "岐阜県"],
+      "drive_time_note": "東京〜名古屋 約3.5〜4時間、東京〜大阪 約6〜7時間（中央道経由）"
+    },
+    {
+      "id": "kanetsu_hokuriku",
+      "name": "関越・北陸道ルート",
+      "highway": "関越自動車道・北陸自動車道",
+      "origin_keywords": ["東京","神奈川","埼玉","千葉","群馬","新潟"],
+      "dest_keywords": ["大阪","京都","金沢","富山","石川","福井","新潟"],
+      "area_ids": ["niigata", "joetsu_myoko", "toyama", "kanazawa", "fukui", "awara_awara"],
+      "via_prefs": ["新潟県", "富山県", "石川県", "福井県"],
+      "drive_time_note": "東京〜金沢 約4〜5時間、東京〜大阪（北陸経由）約7〜8時間"
+    },
+    {
+      "id": "tohoku",
+      "name": "東北道ルート",
+      "highway": "東北自動車道",
+      "origin_keywords": ["東京","神奈川","埼玉","千葉","横浜","川崎","さいたま","宇都宮","茨城","栃木","群馬","水戸","前橋","高崎"],
+      "dest_keywords": ["仙台","青森","岩手","秋田","山形","福島","盛岡"],
+      "area_ids": ["nasu", "shirakawa", "koriyama", "sendai", "ichinoseki", "morioka", "towada"],
+      "via_prefs": ["栃木県", "福島県", "宮城県", "岩手県"],
+      "drive_time_note": "東京〜仙台 約3〜3.5時間、東京〜盛岡 約4.5〜5時間"
+    },
+    {
+      "id": "sanyo",
+      "name": "山陽道ルート",
+      "highway": "山陽自動車道・中国自動車道",
+      "origin_keywords": ["大阪","京都","兵庫","神戸","奈良","滋賀","和歌山"],
+      "dest_keywords": ["福岡","広島","岡山","山口","北九州","博多","九州","熊本","鹿児島"],
+      "area_ids": ["himeji", "okayama", "onomichi_hiroshima", "hiroshima", "iwakuni", "shimonoseki"],
+      "via_prefs": ["兵庫県", "岡山県", "広島県", "山口県"],
+      "drive_time_note": "大阪〜広島 約3〜3.5時間、大阪〜福岡 約5〜6時間"
+    },
+    {
+      "id": "kyushu",
+      "name": "九州道ルート",
+      "highway": "九州自動車道",
+      "origin_keywords": ["福岡","博多","北九州"],
+      "dest_keywords": ["鹿児島","熊本","宮崎","大分","長崎","佐賀"],
+      "area_ids": ["kurume", "kumamoto", "hitoyoshi", "yatsushiro", "kagoshima", "beppu_oita", "yufu"],
+      "via_prefs": ["福岡県", "熊本県", "鹿児島県", "大分県"],
+      "drive_time_note": "福岡〜熊本 約1.5時間、福岡〜鹿児島 約3〜3.5時間"
+    },
+    {
+      "id": "meishin",
+      "name": "名神・新名神ルート",
+      "highway": "名神高速・新名神高速",
+      "origin_keywords": ["名古屋","愛知","岐阜","三重"],
+      "dest_keywords": ["大阪","京都","兵庫","神戸","奈良","滋賀"],
+      "area_ids": ["nagahama_nagahama", "otsu_biwako", "kyoto", "osaka_kobe"],
+      "via_prefs": ["滋賀県", "京都府"],
+      "drive_time_note": "名古屋〜大阪 約2〜2.5時間（新名神経由）"
+    }
+  ]
+}
