@@ -579,12 +579,53 @@
         </div>
       </div>
 
-      <!-- 正直な注釈 -->
-      <div class="fade-in mt-8 bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-        <p class="font-black mb-2">📌 正直に書きます</p>
-        <p class="leading-relaxed mb-2">※「専用設計」とはいえ、現時点は<strong>個人開発 × AIで設計した125エリアDB</strong>が土台です。大手のような大規模データや予約連携は持っていません。</p>
-        <p class="leading-relaxed mb-2">その代わり、ユーザーの実際の旅行フィードバック・口コミをもとに<strong>継続的にエリアデータを改善していく</strong>ことを最大の強みにしていきます。使えば使うほど、TRIPOSのデータ精度が上がる仕組みを作ります。</p>
-        <p class="leading-relaxed">今は「粗削りだけど自分の家族のことを一番考えてくれるAI」です。大手が真似してきたとき、すでにあなたの家族の3年分のデータがここにある——それがゴールです。</p>
+      <!-- データ戦略の宣言 -->
+      <div class="fade-in mt-10">
+        <div class="text-center mb-6">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Data Strategy</p>
+          <h3 class="text-xl font-black text-navy">なぜ、時間をかけるほど<br/>TRIPOSが強くなるのか</h3>
+        </div>
+        <div class="bg-navy text-white rounded-3xl p-6 mb-4">
+          <p class="text-xs text-white/50 font-bold uppercase tracking-wider mb-3">TRIPOSだけが持てるデータ</p>
+          <div class="space-y-3 text-sm">
+            <div class="flex gap-3 items-start">
+              <span class="text-brand font-black shrink-0">vs ChatGPT</span>
+              <p class="text-white/80">汎用AIはネット上の「一般的な人気情報」しか使えない。TRIPOSは<strong class="text-white">「子連れ家族が・どのルートで・どのエリアに泊まって・どう感じたか」</strong>という実体験データを蓄積できる。これは買えないし、真似できない。</p>
+            </div>
+            <div class="border-t border-white/10 pt-3 flex gap-3 items-start">
+              <span class="text-teal font-black shrink-0">vs じゃらん</span>
+              <p class="text-white/80">大手OTAは「予約された」データしか持たない。満足したかどうかは知らない。TRIPOSは旅行後の満足度フィードバックを<strong class="text-white">移動コンテキスト（出発地・距離・季節・子供年齢）ごとに</strong>記録していく。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- フライホイール図 -->
+        <div class="bg-gray-50 border border-gray-200 rounded-3xl p-6">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider text-center mb-5">データの好循環</p>
+          <div class="flex items-center justify-center gap-2 flex-wrap text-center text-xs font-bold">
+            <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+              <div class="text-2xl mb-1">👨‍👩‍👧</div>
+              <p class="text-navy">使う人が増える</p>
+            </div>
+            <div class="text-brand text-lg">→</div>
+            <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+              <div class="text-2xl mb-1">📝</div>
+              <p class="text-navy">実体験が<br/>蓄積される</p>
+            </div>
+            <div class="text-brand text-lg">→</div>
+            <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+              <div class="text-2xl mb-1">📊</div>
+              <p class="text-navy">スコア精度が<br/>上がる</p>
+            </div>
+            <div class="text-brand text-lg">→</div>
+            <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+              <div class="text-2xl mb-1">✨</div>
+              <p class="text-navy">より良い提案<br/>ができる</p>
+            </div>
+            <div class="text-brand text-lg hidden md:block">→ <span class="text-gray-400 text-xs">（最初に戻る）</span></div>
+          </div>
+          <p class="text-xs text-gray-400 text-center mt-4">大手が今から同じことをやろうとしても、すでに蓄積した<strong>「家族×移動コンテキスト」データは買えない。</strong></p>
+        </div>
       </div>
     </div>
   </section>
