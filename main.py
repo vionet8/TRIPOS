@@ -65,6 +65,33 @@ async def ping():
 async def ping_head():
     return {}
 
+@app.get("/api/debug")
+async def debug():
+    """起動診断エンドポイント"""
+    import traceback
+    result = {}
+    # 環境変数チェック
+    result["ANTHROPIC_API_KEY"] = "SET" if os.environ.get("ANTHROPIC_API_KEY") else "MISSING"
+    result["UPSTASH_REDIS_REST_URL"] = "SET" if os.environ.get("UPSTASH_REDIS_REST_URL") else "MISSING"
+    # areas_db チェック
+    try:
+        areas = get_all_areas()
+        result["areas_db"] = f"OK ({len(areas)} areas)"
+    except Exception as e:
+        result["areas_db"] = f"ERROR: {e}"
+    # Claude API 簡易テスト
+    try:
+        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        msg = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=10,
+            messages=[{"role": "user", "content": "hi"}]
+        )
+        result["claude_api"] = f"OK: {msg.content[0].text[:20]}"
+    except Exception as e:
+        result["claude_api"] = f"ERROR: {type(e).__name__}: {str(e)}"
+    return result
+
 @app.get("/")
 async def index():
     html = (Path(__file__).parent / "static" / "app.html").read_text(encoding="utf-8")
