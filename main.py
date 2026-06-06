@@ -71,6 +71,16 @@ async def lp_page():
 
 @app.post("/api/recommend")
 async def recommend(req: RecommendRequest):
+    import traceback
+    from fastapi import HTTPException
+    try:
+        return await _recommend_inner(req)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"[UNHANDLED] {type(e).__name__}: {str(e)}\n{traceback.format_exc()[-800:]}")
+
+async def _recommend_inner(req: RecommendRequest):
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
     all_areas = get_all_areas()
