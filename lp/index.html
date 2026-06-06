@@ -518,30 +518,30 @@
         <form id="requestForm" class="space-y-5">
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">よく使う出発地 <span class="text-brand">*</span></label>
-            <input type="text" placeholder="例：宇都宮、千葉、東京" required
+            <input id="reg_origin" type="text" placeholder="例：宇都宮、千葉、東京" required
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
           </div>
           <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">よく使う目的地 <span class="text-brand">*</span></label>
-            <input type="text" placeholder="例：大阪、広島、福岡" required
+            <label class="block text-sm font-bold text-gray-700 mb-1">よく使う目的地 <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
+            <input id="reg_dest" type="text" placeholder="例：大阪、広島、福岡（帰省先など）"
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
           </div>
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">子供の年齢 <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
-            <input type="text" placeholder="例：3歳・6歳"
+            <input id="reg_children" type="text" placeholder="例：3歳・6歳"
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
           </div>
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">メールアドレス <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
-            <input type="email" placeholder="example@email.com"
+            <input id="reg_email" type="email" placeholder="example@email.com"
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal" />
           </div>
           <div>
             <label class="block text-sm font-bold text-gray-700 mb-1">一言コメント <span class="text-gray-400 text-xs font-normal">（任意）</span></label>
-            <textarea rows="3" placeholder="こんな機能が欲しい、こういう旅で困っている、など何でも"
+            <textarea id="reg_comment" rows="3" placeholder="こんな機能が欲しい、こういう旅で困っている、など何でも"
               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"></textarea>
           </div>
-          <button type="submit" class="w-full bg-navy text-white font-bold text-base py-4 rounded-xl hover:bg-navylight transition-colors shadow-lg">
+          <button type="submit" id="reg_btn" class="w-full bg-navy text-white font-bold text-base py-4 rounded-xl hover:bg-navylight transition-colors shadow-lg">
             登録する 🎉
           </button>
         </form>
@@ -565,8 +565,23 @@
   </footer>
 
   <script>
-    document.getElementById('requestForm').addEventListener('submit', function(e) {
+    document.getElementById('requestForm').addEventListener('submit', async function(e) {
       e.preventDefault();
+      const btn = document.getElementById('reg_btn');
+      btn.disabled = true; btn.textContent = '送信中...';
+      const payload = {
+        origin: document.getElementById('reg_origin').value.trim(),
+        destination: document.getElementById('reg_dest').value.trim(),
+        children: document.getElementById('reg_children').value.trim(),
+        email: document.getElementById('reg_email').value.trim(),
+        comment: document.getElementById('reg_comment').value.trim(),
+      };
+      try {
+        await fetch('/api/register', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {}
       this.classList.add('hidden');
       document.getElementById('thankYou').classList.remove('hidden');
     });

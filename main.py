@@ -186,6 +186,237 @@ async def recommend(req: RecommendRequest):
     return result
 
 
+# ─────────────────────────────────────────
+# 先行登録API
+# ─────────────────────────────────────────
+class RegisterRequest(BaseModel):
+    origin: str
+    destination: str = ""
+    children: str = ""
+    email: str = ""
+    comment: str = ""
+
+@app.post("/api/register")
+async def register(req: RegisterRequest):
+    import storage as _storage
+    from datetime import datetime, timezone, timedelta
+    JST = timezone(timedelta(hours=9))
+    entries = _storage.load("tripos_registrations")
+    if not isinstance(entries, list):
+        entries = []
+    entries.append({
+        "origin": req.origin,
+        "destination": req.destination,
+        "children": req.children,
+        "email": req.email,
+        "comment": req.comment,
+        "registered_at": datetime.now(JST).isoformat(),
+    })
+    _storage.save("tripos_registrations", entries)
+    return {"ok": True}
+
+
+# ─────────────────────────────────────────
+# 要件定義ページ
+# ─────────────────────────────────────────
+@app.get("/requirements")
+async def requirements_page():
+    html = (Path(__file__).parent / "static" / "requirements.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
+
+
+# ─────────────────────────────────────────
+# 管理ページ
+# ─────────────────────────────────────────
+def _check_admin(key: str):
+    from fastapi import HTTPException
+    secret = os.environ.get("ADMIN_KEY", "tripos-admin")
+    if key != secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+@app.get("/admin")
+async def admin_index(key: str = ""):
+    _check_admin(key)
+    html = f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>TRIPOS 管理</title>
+    <style>
+      body{{font-family:-apple-system,sans-serif;padding:32px 24px;background:#f0f4f8;color:#222;max-width:600px;margin:0 auto}}
+      h1{{font-size:1.4rem;margin-bottom:4px;color:#1B3A6B}}
+      .sub{{color:#888;font-size:.9rem;margin-bottom:32px}}
+      .card{{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;margin-bottom:12px;display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;transition:box-shadow .15s}}
+      .card:hover{{box-shadow:0 4px 16px rgba(0,0,0,.13)}}
+      .icon{{font-size:2rem;flex-shrink:0}}
+      .card-title{{font-size:1rem;font-weight:700;margin-bottom:2px}}
+      .card-desc{{font-size:.83rem;color:#888}}
+      .arrow{{margin-left:auto;color:#ccc;font-size:1.3rem}}
+    </style></head><body>
+    <h1>🧭 TRIPOS 管理</h1>
+    <p class="sub">管理者メニュー</p>
+    <a class="card" href="/admin/registrations?key={key}">
+      <div class="icon">📝</div><div>
+        <div class="card-title">先行登録一覧</div>
+        <div class="card-desc">LPからのリクエストカード・出発地・コメントの確認</div>
+      </div><div class="arrow">›</div>
+    </a>
+    <a class="card" href="/admin/ambassadors?key={key}">
+      <div class="icon">🌟</div><div>
+        <div class="card-title">アンバサダー管理</div>
+        <div class="card-desc">申請の承認・実績確認・紹介コード管理</div>
+      </div><div class="arrow">›</div>
+    </a>
+    <a class="card" href="/admin/subscribers?key={key}">
+      <div class="icon">💳</div><div>
+        <div class="card-title">課金者管理</div>
+        <div class="card-desc">有料プラン加入者・プラン・請求状況の確認</div>
+      </div><div class="arrow">›</div>
+    </a>
+    <a class="card" href="/requirements" target="_blank">
+      <div class="icon">📋</div><div>
+        <div class="card-title">要件定義・仕様書</div>
+        <div class="card-desc">機能一覧・ロードマップ・技術仕様の確認</div>
+      </div><div class="arrow">›</div>
+    </a>
+    </body></html>"""
+    return HTMLResponse(content=html)
+
+
+@app.get("/admin/registrations")
+async def admin_registrations(key: str = ""):
+    _check_admin(key)
+    import storage as _storage
+    entries = _storage.load("tripos_registrations")
+    if not isinstance(entries, list):
+        entries = []
+    rows = ""
+    for e in reversed(entries):
+        rows += f"""<tr>
+          <td>{e.get('registered_at','')[:16]}</td>
+          <td>{e.get('origin','—')}</td>
+          <td>{e.get('destination','—') or '（観光モード）'}</td>
+          <td>{e.get('children','—') or '—'}</td>
+          <td>{e.get('email','—') or '—'}</td>
+          <td style="max-width:220px;white-space:pre-wrap">{e.get('comment','—') or '—'}</td>
+        </tr>"""
+    html = f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>TRIPOS 先行登録一覧</title>
+    <style>
+      body{{font-family:-apple-system,sans-serif;padding:24px;background:#f0f4f8;color:#222}}
+      h1{{font-size:1.3rem;margin-bottom:4px;color:#1B3A6B}}
+      .count{{color:#888;font-size:.9rem;margin-bottom:20px}}
+      .back{{display:inline-block;margin-bottom:16px;color:#1B3A6B;font-size:.9rem;text-decoration:none}}
+      table{{border-collapse:collapse;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}}
+      th{{background:#1B3A6B;color:#fff;padding:10px 14px;font-size:.8rem;text-align:left;white-space:nowrap}}
+      td{{padding:10px 14px;font-size:.85rem;border-bottom:1px solid #eee;vertical-align:top}}
+      tr:last-child td{{border-bottom:none}}
+      tr:hover td{{background:#f8faff}}
+    </style></head><body>
+    <a class="back" href="/admin?key={key}">← 管理メニューへ</a>
+    <h1>📝 先行登録一覧</h1>
+    <p class="count">合計 <strong>{len(entries)}</strong> 件</p>
+    <table><thead><tr>
+      <th>日時</th><th>出発地</th><th>目的地</th><th>子供年齢</th><th>メール</th><th>コメント</th>
+    </tr></thead><tbody>{rows or '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:32px">まだ登録がありません</td></tr>'}</tbody></table>
+    </body></html>"""
+    return HTMLResponse(content=html)
+
+
+@app.get("/admin/ambassadors")
+async def admin_ambassadors(key: str = ""):
+    _check_admin(key)
+    import storage as _storage
+    entries = _storage.load("tripos_ambassadors")
+    if not isinstance(entries, list):
+        entries = []
+    rows = ""
+    for e in reversed(entries):
+        status_color = {"pending":"#f5a623","active":"#2AB4A0","inactive":"#ccc"}.get(e.get('status','pending'),'#ccc')
+        rows += f"""<tr>
+          <td>{e.get('registered_at','')[:16]}</td>
+          <td>{e.get('name','—')}</td>
+          <td>{e.get('email','—')}</td>
+          <td>{e.get('channel','—')}</td>
+          <td>{e.get('followers','—')}</td>
+          <td><span style="color:{status_color};font-weight:700">{e.get('status','pending')}</span></td>
+          <td>{e.get('referral_code','—')}</td>
+          <td>{e.get('referrals',0)}</td>
+        </tr>"""
+    html = f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>TRIPOS アンバサダー管理</title>
+    <style>
+      body{{font-family:-apple-system,sans-serif;padding:24px;background:#f0f4f8;color:#222}}
+      h1{{font-size:1.3rem;margin-bottom:4px;color:#1B3A6B}}
+      .count{{color:#888;font-size:.9rem;margin-bottom:20px}}
+      .back{{display:inline-block;margin-bottom:16px;color:#1B3A6B;font-size:.9rem;text-decoration:none}}
+      table{{border-collapse:collapse;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}}
+      th{{background:#1B3A6B;color:#fff;padding:10px 14px;font-size:.8rem;text-align:left;white-space:nowrap}}
+      td{{padding:10px 14px;font-size:.85rem;border-bottom:1px solid #eee;vertical-align:top}}
+      tr:last-child td{{border-bottom:none}}
+      tr:hover td{{background:#f8faff}}
+    </style></head><body>
+    <a class="back" href="/admin?key={key}">← 管理メニューへ</a>
+    <h1>🌟 アンバサダー管理</h1>
+    <p class="count">合計 <strong>{len(entries)}</strong> 名</p>
+    <table><thead><tr>
+      <th>申請日</th><th>名前</th><th>メール</th><th>発信チャネル</th><th>フォロワー数</th><th>ステータス</th><th>紹介コード</th><th>紹介数</th>
+    </tr></thead><tbody>{rows or '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:32px">まだ申請がありません</td></tr>'}</tbody></table>
+    </body></html>"""
+    return HTMLResponse(content=html)
+
+
+@app.get("/admin/subscribers")
+async def admin_subscribers(key: str = ""):
+    _check_admin(key)
+    import storage as _storage
+    entries = _storage.load("tripos_subscribers")
+    if not isinstance(entries, list):
+        entries = []
+    rows = ""
+    for e in reversed(entries):
+        status_color = {"active":"#2AB4A0","cancelled":"#e74c3c","trial":"#f5a623"}.get(e.get('status','trial'),'#ccc')
+        rows += f"""<tr>
+          <td>{e.get('started_at','')[:16]}</td>
+          <td>{e.get('name','—')}</td>
+          <td>{e.get('email','—')}</td>
+          <td>{e.get('plan','—')}</td>
+          <td><span style="color:{status_color};font-weight:700">{e.get('status','—')}</span></td>
+          <td>{e.get('amount','—')}</td>
+          <td>{e.get('next_billing','—')}</td>
+          <td>{e.get('referral_code','—') or '—'}</td>
+        </tr>"""
+    total_mrr = sum(e.get('amount', 0) for e in entries if e.get('status') == 'active')
+    html = f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>TRIPOS 課金者管理</title>
+    <style>
+      body{{font-family:-apple-system,sans-serif;padding:24px;background:#f0f4f8;color:#222}}
+      h1{{font-size:1.3rem;margin-bottom:4px;color:#1B3A6B}}
+      .meta{{color:#888;font-size:.9rem;margin-bottom:20px}}
+      .back{{display:inline-block;margin-bottom:16px;color:#1B3A6B;font-size:.9rem;text-decoration:none}}
+      .stat{{display:inline-block;background:#fff;border-radius:10px;padding:12px 20px;margin:0 8px 16px 0;box-shadow:0 2px 8px rgba(0,0,0,.07)}}
+      .stat-val{{font-size:1.6rem;font-weight:900;color:#1B3A6B}}
+      .stat-label{{font-size:.75rem;color:#888}}
+      table{{border-collapse:collapse;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}}
+      th{{background:#1B3A6B;color:#fff;padding:10px 14px;font-size:.8rem;text-align:left;white-space:nowrap}}
+      td{{padding:10px 14px;font-size:.85rem;border-bottom:1px solid #eee;vertical-align:top}}
+      tr:last-child td{{border-bottom:none}}
+      tr:hover td{{background:#f8faff}}
+    </style></head><body>
+    <a class="back" href="/admin?key={key}">← 管理メニューへ</a>
+    <h1>💳 課金者管理</h1>
+    <div>
+      <div class="stat"><div class="stat-val">{len(entries)}</div><div class="stat-label">合計加入者</div></div>
+      <div class="stat"><div class="stat-val">¥{total_mrr:,}</div><div class="stat-label">MRR（月次売上）</div></div>
+    </div>
+    <table><thead><tr>
+      <th>開始日</th><th>名前</th><th>メール</th><th>プラン</th><th>状態</th><th>金額/月</th><th>次回請求</th><th>紹介コード</th>
+    </tr></thead><tbody>{rows or '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:32px">まだ課金者がいません</td></tr>'}</tbody></table>
+    </body></html>"""
+    return HTMLResponse(content=html)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

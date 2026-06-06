@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRIPOS 要件定義書</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { navy:'#1B3A6B', teal:'#2AB4A0', brand:'#F97316' } } }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>body{font-family:'Noto Sans JP',sans-serif;}</style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <header class="bg-navy text-white px-6 py-4 sticky top-0 z-50 shadow">
+    <div class="max-w-4xl mx-auto flex items-center gap-3">
+      <span class="text-xl">🧭</span>
+      <span class="font-black text-base">TRIPOS 要件定義書</span>
+      <span class="ml-2 text-xs bg-teal/20 text-teal px-2 py-0.5 rounded-full font-bold">v0.1 β</span>
+      <span class="ml-auto text-white/40 text-xs">更新: 2026-06-06</span>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto px-5 py-10 space-y-10">
+
+    <!-- 目次 -->
+    <nav class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+      <p class="font-black text-navy mb-4">目次</p>
+      <ol class="space-y-1 text-sm text-teal list-decimal list-inside">
+        <li><a href="#overview" class="hover:underline">プロダクト概要</a></li>
+        <li><a href="#problem" class="hover:underline">解決する課題</a></li>
+        <li><a href="#features" class="hover:underline">機能一覧</a></li>
+        <li><a href="#score" class="hover:underline">魅力度スコア設計</a></li>
+        <li><a href="#stack" class="hover:underline">技術スタック</a></li>
+        <li><a href="#roadmap" class="hover:underline">ロードマップ</a></li>
+        <li><a href="#monetization" class="hover:underline">収益化戦略</a></li>
+        <li><a href="#moat" class="hover:underline">競合優位性（堀）</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. 概要 -->
+    <section id="overview">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">1. プロダクト概要</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+        <div class="grid md:grid-cols-2 gap-4 text-sm">
+          <div><p class="text-gray-400 text-xs mb-1">プロダクト名</p><p class="font-bold">TRIPOS（トリポス）</p></div>
+          <div><p class="text-gray-400 text-xs mb-1">タグライン</p><p class="font-bold">家族の移動を、まるごと設計する。</p></div>
+          <div><p class="text-gray-400 text-xs mb-1">ターゲット</p><p class="font-bold">子連れ家族・帰省する社会人・長距離ドライブ愛好者</p></div>
+          <div><p class="text-gray-400 text-xs mb-1">カテゴリ</p><p class="font-bold">AIトラベルコンシェルジュ（Web アプリ）</p></div>
+          <div><p class="text-gray-400 text-xs mb-1">フェーズ</p><p class="font-bold text-brand">Phase 0 β（MVP検証中）</p></div>
+          <div><p class="text-gray-400 text-xs mb-1">URL</p><p class="font-bold">https://tripos-fgw0.onrender.com</p></div>
+        </div>
+        <div class="bg-teal/5 border border-teal/20 rounded-xl p-4 text-sm">
+          <p class="font-bold text-navy mb-1">一言コンセプト</p>
+          <p class="text-gray-600">「どこに泊まるか」を先に決めなくていい。出発地・目的・同行者を入れると、AIがルートを逆算して最適な宿泊エリアを提案する。人気ランキングではなく「今のこの家族に合う狙い目」を独自スコアで選ぶ。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 課題 -->
+    <section id="problem">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">2. 解決する課題</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-gray-100">
+            <th class="text-left py-2 text-gray-500 font-bold w-1/3">既存サービスの問題</th>
+            <th class="text-left py-2 text-gray-500 font-bold">TRIPOSの解決</th>
+          </tr></thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-3 text-gray-600">県を先に決めないと検索できない</td><td class="py-3 font-bold text-navy">出発地→目的地からエリアを逆算提案</td></tr>
+            <tr><td class="py-3 text-gray-600">人気ランキングしか出てこない（混雑・高い）</td><td class="py-3 font-bold text-navy">独自の魅力度スコアで「今が狙い目」を提示</td></tr>
+            <tr><td class="py-3 text-gray-600">子連れ・帰省・グルメなど目的に合った提案がない</td><td class="py-3 font-bold text-navy">旅の目的×同行者タイプでパーソナライズ</td></tr>
+            <tr><td class="py-3 text-gray-600">毎回ゼロから調べ直し。前回の宿も忘れる</td><td class="py-3 font-bold text-navy">行きたいリスト・旅行履歴を記録して次回に活かす</td></tr>
+            <tr><td class="py-3 text-gray-600">帰省の中間地点をどこにするか毎回悩む</td><td class="py-3 font-bold text-navy">帰省モード：中間地点を距離・疲労度から自動算出</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. 機能一覧 -->
+    <section id="features">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">3. 機能一覧</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-gray-100">
+            <th class="text-left py-2 text-gray-500 font-bold">機能</th>
+            <th class="text-left py-2 text-gray-500 font-bold">概要</th>
+            <th class="text-left py-2 text-gray-500 font-bold">状態</th>
+          </tr></thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-3 font-bold">エリア提案（観光モード）</td><td class="py-3 text-gray-600">出発地・旅の目的・同行者からAIが行き先エリアを3件提案</td><td class="py-3"><span class="bg-teal/10 text-teal text-xs font-bold px-2 py-0.5 rounded-full">実装済み</span></td></tr>
+            <tr><td class="py-3 font-bold">エリア提案（帰省モード）</td><td class="py-3 text-gray-600">出発地→目的地の中間地点として最適なエリアを提案</td><td class="py-3"><span class="bg-teal/10 text-teal text-xs font-bold px-2 py-0.5 rounded-full">実装済み</span></td></tr>
+            <tr><td class="py-3 font-bold">魅力度スコア表示</td><td class="py-3 text-gray-600">人気度＋満足度＋子連れ適性－混雑度－価格高騰率</td><td class="py-3"><span class="bg-teal/10 text-teal text-xs font-bold px-2 py-0.5 rounded-full">実装済み</span></td></tr>
+            <tr><td class="py-3 font-bold">ウェイト調整</td><td class="py-3 text-gray-600">子連れ・コスパ・温泉の重視度を1〜5で調整</td><td class="py-3"><span class="bg-teal/10 text-teal text-xs font-bold px-2 py-0.5 rounded-full">実装済み</span></td></tr>
+            <tr><td class="py-3 font-bold">行きたいリスト</td><td class="py-3 text-gray-600">localStorage保存。次の旅行でルート上にあれば優先提案</td><td class="py-3"><span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-0.5 rounded-full">仮実装</span></td></tr>
+            <tr><td class="py-3 font-bold">旅行履歴・学習</td><td class="py-3 text-gray-600">過去の旅行・満足度を記録してパーソナライズ</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+            <tr><td class="py-3 font-bold">YouTube宿泊レビュー連携</td><td class="py-3 text-gray-600">提案エリアの宿泊レビュー動画を自動取得・表示</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+            <tr><td class="py-3 font-bold">周辺イベント検索</td><td class="py-3 text-gray-600">宿泊エリア周辺の週末イベント・祭りを自動取得</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+            <tr><td class="py-3 font-bold">楽天/じゃらん価格連携</td><td class="py-3 text-gray-600">実際の宿泊価格をAPIで動的取得・最安値表示</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+            <tr><td class="py-3 font-bold">ユーザー認証</td><td class="py-3 text-gray-600">行きたいリスト・履歴のクラウド保存に必要</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+            <tr><td class="py-3 font-bold">アフィリエイトリンク</td><td class="py-3 text-gray-600">楽天/じゃらん/Booking.comへの比較リンク</td><td class="py-3"><span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-0.5 rounded-full">未実装</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. スコア設計 -->
+    <section id="score">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">4. 魅力度スコア設計</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+        <div class="bg-navy/5 rounded-xl p-4 text-center font-bold text-navy">
+          魅力度スコア = 人気度 + 満足度 + 子連れ適性 − 混雑度 − 価格高騰率
+        </div>
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-gray-100">
+            <th class="text-left py-2 text-gray-500 font-bold">要素</th>
+            <th class="text-left py-2 text-gray-500 font-bold">データソース</th>
+            <th class="text-left py-2 text-gray-500 font-bold">現状</th>
+          </tr></thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-2 font-bold">人気度</td><td class="py-2 text-gray-600">Googleトレンド・SNSメンション数（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">満足度</td><td class="py-2 text-gray-600">楽天トラベル評価・じゃらん口コミ（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">子連れ適性</td><td class="py-2 text-gray-600">静的DB（family_score）× 子供年齢</td><td class="py-2 text-teal font-bold">実装済み</td></tr>
+            <tr><td class="py-2 font-bold">混雑度</td><td class="py-2 text-gray-600">Googleマップ混雑データ・SNSトレンド（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+            <tr><td class="py-2 font-bold">価格高騰率</td><td class="py-2 text-gray-600">楽天トラベルAPI・じゃらんAPI（将来）</td><td class="py-2 text-gray-500">Claude推定値（β）</td></tr>
+          </tbody>
+        </table>
+        <p class="text-xs text-gray-400">※β版では全要素をClaude APIが推定。Phase1以降で実データに順次切り替え予定。</p>
+      </div>
+    </section>
+
+    <!-- 5. 技術スタック -->
+    <section id="stack">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">5. 技術スタック</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-gray-100">
+            <th class="text-left py-2 text-gray-500 font-bold">レイヤー</th>
+            <th class="text-left py-2 text-gray-500 font-bold">技術</th>
+            <th class="text-left py-2 text-gray-500 font-bold">備考</th>
+          </tr></thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-2 font-bold">バックエンド</td><td class="py-2">FastAPI（Python）</td><td class="py-2 text-gray-500">Render.com でホスト</td></tr>
+            <tr><td class="py-2 font-bold">フロントエンド</td><td class="py-2">Vanilla HTML + Tailwind CSS CDN</td><td class="py-2 text-gray-500">Node.js不要</td></tr>
+            <tr><td class="py-2 font-bold">AI</td><td class="py-2">Claude 3.5 Sonnet（Anthropic API）</td><td class="py-2 text-gray-500">エリア提案・スコアリング</td></tr>
+            <tr><td class="py-2 font-bold">データストレージ</td><td class="py-2">Upstash Redis</td><td class="py-2 text-gray-500">先行登録・アンバサダー・課金者データ</td></tr>
+            <tr><td class="py-2 font-bold">静的DB</td><td class="py-2">areas_db.json（125エリア）</td><td class="py-2 text-gray-500">不変データのみ保持</td></tr>
+            <tr><td class="py-2 font-bold">デプロイ</td><td class="py-2">GitHub → Render（自動デプロイ）</td><td class="py-2 text-gray-500">Free tier</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. ロードマップ -->
+    <section id="roadmap">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">6. ロードマップ</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-3">
+        <div class="flex gap-4 items-start">
+          <div class="bg-brand text-white text-xs font-black px-3 py-1 rounded-full shrink-0 mt-0.5">Phase 0</div>
+          <div>
+            <p class="font-bold text-navy">MVP・需要検証（現在）</p>
+            <p class="text-sm text-gray-500">エリア提案コア機能 / LP先行登録 / 管理ページ</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="bg-teal text-white text-xs font-black px-3 py-1 rounded-full shrink-0 mt-0.5">Phase 1</div>
+          <div>
+            <p class="font-bold text-navy">データ強化・収益化</p>
+            <p class="text-sm text-gray-500">楽天/じゃらんAPIで実価格取得 / アフィリエイトリンク追加 / YouTube宿泊レビュー連携</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="bg-navy text-white text-xs font-black px-3 py-1 rounded-full shrink-0 mt-0.5">Phase 2</div>
+          <div>
+            <p class="font-bold text-navy">パーソナライズ・有料化</p>
+            <p class="text-sm text-gray-500">ユーザー認証 / 行きたいリストのクラウド保存 / 旅行履歴 / 月額プラン（300〜500円）</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div class="bg-gray-300 text-white text-xs font-black px-3 py-1 rounded-full shrink-0 mt-0.5">Phase 3</div>
+          <div>
+            <p class="font-bold text-gray-500">スケール</p>
+            <p class="text-sm text-gray-400">周辺イベント自動検索 / スコアの実データ化 / アプリ化検討</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 収益化戦略 -->
+    <section id="monetization">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">7. 収益化戦略</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b border-gray-100">
+            <th class="text-left py-2 text-gray-500 font-bold">収益源</th>
+            <th class="text-left py-2 text-gray-500 font-bold">単価目安</th>
+            <th class="text-left py-2 text-gray-500 font-bold">フェーズ</th>
+          </tr></thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="py-2 font-bold">アフィリエイト（じゃらん/Booking.com）</td><td class="py-2 text-gray-600">予約額の2〜6%</td><td class="py-2"><span class="bg-teal/10 text-teal text-xs font-bold px-2 py-0.5 rounded-full">Phase 1</span></td></tr>
+            <tr><td class="py-2 font-bold">月額サブスク（300〜500円）</td><td class="py-2 text-gray-600">¥300〜500/月</td><td class="py-2"><span class="bg-navy/10 text-navy text-xs font-bold px-2 py-0.5 rounded-full">Phase 2</span></td></tr>
+          </tbody>
+        </table>
+        <div class="bg-gray-50 rounded-xl p-4 text-sm">
+          <p class="font-bold text-navy mb-2">APIコスト目安</p>
+          <p class="text-gray-500">1提案あたり約1.5〜2円（Claude 3.5 Sonnet）/ 月100ユーザー×1回/日 ≒ 約4,500〜6,000円/月</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. 競合優位性 -->
+    <section id="moat">
+      <h2 class="text-xl font-black text-navy mb-4 border-l-4 border-teal pl-4">8. 競合優位性（堀）</h2>
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-3">
+        <div class="border-l-4 border-teal pl-4">
+          <p class="font-bold text-navy">① 個人データの蓄積</p>
+          <p class="text-sm text-gray-500">行きたいリスト・旅行履歴・子供の成長記録。3年分溜まると他サービスに乗り換えられなくなる。</p>
+        </div>
+        <div class="border-l-4 border-brand pl-4">
+          <p class="font-bold text-navy">② 独自スコアリング</p>
+          <p class="text-sm text-gray-500">「今が狙い目」を定量化するアルゴリズムは大手OTAには存在しない。目的が違う（満足度最大化 vs 予約数最大化）。</p>
+        </div>
+        <div class="border-l-4 border-navy pl-4">
+          <p class="font-bold text-navy">③ ルート逆算という切り口</p>
+          <p class="text-sm text-gray-500">「県を先に選ぶ」既存UXへのアンチテーゼ。後発でも差別化できる入口。</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="bg-navy text-white/40 text-xs text-center py-6 mt-10">
+    © 2026 TRIPOS — 内部資料
+  </footer>
+
+</body>
+</html>
