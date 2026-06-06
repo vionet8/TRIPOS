@@ -39,12 +39,16 @@ def get_all_areas():
 class RecommendRequest(BaseModel):
     origin: str           # 出発地（例：宇都宮）
     destination: str      # 目的地（例：大阪）
-    purpose: str          # 旅の目的（観光/グルメ/温泉/レジャー）
+    purpose: str          # 旅の目的（観光/グルメ/温泉/レジャー/帰省）
     travel_date: str      # 出発日（例：2026-08-02）
     adults: int = 2
     children: str = ""    # 子供の年齢（例：3歳・6歳）
     nights: int = 1
     budget: str = "mid"   # budget/mid/premium/luxury
+    mode: str = "normal"  # normal / kiseи（帰省モード）
+    weight_family: int = 3   # 子連れ重視度 1-5
+    weight_cost: int = 3     # コスパ重視度 1-5
+    weight_onsen: int = 3    # 温泉重視度 1-5
 
 
 @app.get("/")
@@ -87,6 +91,12 @@ async def recommend(req: RecommendRequest):
             "food": a.get("food", [])[:3],
         })
 
+    mode_note = ""
+    if req.mode == "kisei":
+        mode_note = "※帰省モード：長距離移動の疲労軽減と子供の負担を最優先。観光より休憩・快適性重視で選ぶこと。"
+
+    weight_note = f"ユーザーの重視度（1〜5）: 子連れ適性={req.weight_family} / コスパ={req.weight_cost} / 温泉={req.weight_onsen}"
+
     prompt = f"""あなたはTRIPOSというAI旅行コンシェルジュです。
 家族の車旅行において、出発地から目的地への移動ルート上で最適な「宿泊エリア」を提案してください。
 
@@ -98,6 +108,8 @@ async def recommend(req: RecommendRequest):
 - 人数：大人{req.adults}人、子供 {req.children if req.children else "なし"}
 - 泊数：{req.nights}泊
 - 予算感：{req.budget}（budget=〜8000円/人、mid=8000〜15000円、premium=15000〜25000円）
+- {weight_note}
+{mode_note}
 
 ## エリアデータベース（125エリア）
 {json.dumps(areas_summary, ensure_ascii=False, indent=None)}
@@ -137,18 +149,26 @@ async def recommend(req: RecommendRequest):
   "route_comment": "ルート全体へのひとこと（渋滞・距離感など）"
 }}"""
 
-    message = client.messages.create(
-        model="claude-opus-4-5",
-        max_tokens=2000,
-        messages=[{"role": "user", "content": prompt}]
-    )
+    try:
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Claude API error: {str(e)}")
 
     raw = message.content[0].text.strip()
 
     # JSON部分を抽出
-    start = raw.find("{")
-    end = raw.rfind("}") + 1
-    result = json.loads(raw[start:end])
+    try:
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        result = json.loads(raw[start:end])
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"JSON parse error: {str(e)} / raw: {raw[:200]}")
 
     return result
 

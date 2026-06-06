@@ -71,8 +71,24 @@
             </div>
           </div>
 
-          <!-- 旅の目的 -->
+          <!-- モード選択 -->
           <div>
+            <label class="block text-xs font-bold text-gray-600 mb-2">🚗 旅のモード <span class="text-brand">*</span></label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-mode="normal" onclick="selectMode(this)"
+                class="mode-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-3 text-center text-xs font-bold transition-colors">
+                🗺️ 通常旅行<br/><span class="font-normal text-gray-400">観光・グルメ・温泉</span>
+              </button>
+              <button type="button" data-mode="kisei" onclick="selectMode(this)"
+                class="mode-btn border-2 border-gray-200 text-gray-600 rounded-xl py-3 text-center text-xs font-bold hover:border-navy hover:text-navy transition-colors">
+                🏠 帰省モード<br/><span class="font-normal text-gray-400">疲労軽減・快適重視</span>
+              </button>
+            </div>
+            <input type="hidden" id="mode" value="normal" />
+          </div>
+
+          <!-- 旅の目的 -->
+          <div id="purposeSection">
             <label class="block text-xs font-bold text-gray-600 mb-2">🎯 旅の目的 <span class="text-brand">*</span></label>
             <div class="grid grid-cols-4 gap-2" id="purposeButtons">
               <button type="button" data-value="観光" onclick="selectPurpose(this)"
@@ -92,7 +108,7 @@
                 🎡<br/>レジャー
               </button>
             </div>
-            <input type="hidden" id="purpose" required />
+            <input type="hidden" id="purpose" />
           </div>
 
           <!-- 日程・泊数 -->
@@ -163,6 +179,31 @@
             </div>
           </div>
 
+          <!-- ウェイト調整 -->
+          <div class="border border-gray-100 rounded-2xl p-4 bg-gray-50">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-bold text-gray-600">⚙️ スコアのウェイトを調整</p>
+              <span class="text-xs text-gray-400">あなたの好みに合わせて変更できます</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 w-20 shrink-0">🧒 子連れ</span>
+                <input type="range" id="weight_family" min="1" max="5" value="3" class="flex-1 accent-teal" oninput="updateWeight('family',this.value)"/>
+                <span id="weight_family_val" class="text-xs font-bold text-teal w-4">3</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 w-20 shrink-0">💴 コスパ</span>
+                <input type="range" id="weight_cost" min="1" max="5" value="3" class="flex-1 accent-teal" oninput="updateWeight('cost',this.value)"/>
+                <span id="weight_cost_val" class="text-xs font-bold text-teal w-4">3</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500 w-20 shrink-0">♨️ 温泉</span>
+                <input type="range" id="weight_onsen" min="1" max="5" value="3" class="flex-1 accent-teal" oninput="updateWeight('onsen',this.value)"/>
+                <span id="weight_onsen_val" class="text-xs font-bold text-teal w-4">3</span>
+              </div>
+            </div>
+          </div>
+
           <button type="submit" id="submitBtn"
             class="w-full bg-navy text-white font-black text-base py-4 rounded-2xl hover:bg-navylight transition-colors shadow-lg mt-2">
             🧭 最適なエリアを提案してもらう
@@ -217,6 +258,37 @@
 
   <script>
     let selectedPurpose = null;
+    let selectedMode = 'normal';
+
+    function selectMode(btn) {
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.remove('border-teal','text-teal','bg-teal/5','border-navy','text-navy','bg-navy/5');
+        b.classList.add('border-gray-200','text-gray-600');
+      });
+      btn.classList.add(btn.dataset.mode === 'kisei' ? 'border-navy' : 'border-teal',
+                        btn.dataset.mode === 'kisei' ? 'text-navy' : 'text-teal',
+                        btn.dataset.mode === 'kisei' ? 'bg-navy/5' : 'bg-teal/5');
+      btn.classList.remove('border-gray-200','text-gray-600');
+      selectedMode = btn.dataset.mode;
+      document.getElementById('mode').value = selectedMode;
+      // 帰省モードは目的選択不要
+      const ps = document.getElementById('purposeSection');
+      if (selectedMode === 'kisei') {
+        ps.style.opacity = '0.4';
+        ps.style.pointerEvents = 'none';
+        document.getElementById('purpose').value = '帰省';
+        document.getElementById('purpose').removeAttribute('required');
+      } else {
+        ps.style.opacity = '1';
+        ps.style.pointerEvents = '';
+        document.getElementById('purpose').value = selectedPurpose || '';
+        document.getElementById('purpose').setAttribute('required','');
+      }
+    }
+
+    function updateWeight(key, val) {
+      document.getElementById('weight_' + key + '_val').textContent = val;
+    }
 
     // 今日の日付をデフォルトに
     const today = new Date();
@@ -276,7 +348,13 @@
         const res = await fetch('/api/recommend', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ origin, destination, purpose, travel_date, nights, adults, children, budget })
+          body: JSON.stringify({
+            origin, destination, purpose, travel_date, nights, adults, children, budget,
+            mode: document.getElementById('mode').value || 'normal',
+            weight_family: parseInt(document.getElementById('weight_family').value),
+            weight_cost: parseInt(document.getElementById('weight_cost').value),
+            weight_onsen: parseInt(document.getElementById('weight_onsen').value),
+          })
         });
 
         if (!res.ok) throw new Error(`サーバーエラー: ${res.status}`);
