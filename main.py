@@ -444,6 +444,15 @@ async def _recommend_inner(req: RecommendRequest):
 8. エリアデータに"detour_from_highway_min"がある場合、迂回時間として参考にすること（帰省モードでは0〜15分のエリアを最優先。30分超は「少し寄り道」と説明に入れること）
 9. highway_icが付いている場合はhighway_viaとして回答に含めること
 
+## 特別提案（special_pick）ルール
+通常3エリアとは別に、以下の条件を全て満たす場合のみ special_pick を1件出すこと：
+- 指定予算より1〜2ランク上だが、この旅行者の具体的な条件（子供の年齢・季節・距離・目的）に対して特別な理由で最適と確信できる
+- 「なぜ今回・この家族だけに勧めるか」を読んで納得できる個人的な理由が書ける
+- 「少し奮発したら人生の思い出になる」と自信を持って言えるもののみ
+- 条件を満たすエリアがなければ special_pick は null にすること（無理に出さない）
+- personal_reasonは「お子さんがまだ〇歳の今だからこそ〜」「この季節限定で〜」など具体的に語りかけること
+- honest_noteは「予算より1泊あたり〇〇円ほど高くなりますが」と正直に書いたうえで背中を押すこと
+
 ## 回答形式（JSON形式で返すこと、他の文章は不要）
 {{
   "areas": [
@@ -475,6 +484,22 @@ async def _recommend_inner(req: RecommendRequest):
   ],
   "return_areas": [],
   "route_comment": "ルート全体へのひとこと",
+  "special_pick": {{
+    "id": "エリアID",
+    "name": "エリア名",
+    "prefecture": "都道府県",
+    "drive_time_from_origin": "約XX時間",
+    "drive_time_to_dest": "約XX時間（残り）",
+    "highway_via": "XX高速経由",
+    "headline": "今回だけの特別な一押し",
+    "personal_reason": "この旅行者・この条件だからこそ勧める理由（2〜3文、語りかける口調で具体的に）",
+    "honest_note": "予算より1泊あたり〇〇円ほど高くなりますが、〜だからこそ価値があります",
+    "price_range": "premium",
+    "hotel_price_avg": "15000-25000",
+    "tags": ["タグ1","タグ2"],
+    "attractions": ["見どころ1","見どころ2"],
+    "food": ["グルメ1","グルメ2"]
+  }},
   "cost_summary": {{
     "estimated_distance_km": 500,
     "fuel_cost": 5800,

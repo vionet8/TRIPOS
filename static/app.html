@@ -453,6 +453,44 @@
       <!-- 行きのエリアカード -->
       <div id="areaCards" class="space-y-4 mb-6"></div>
 
+      <!-- ✨ 特別提案カード -->
+      <div id="specialPickSection" class="hidden mb-6">
+        <div class="relative rounded-3xl overflow-hidden shadow-xl border-2 border-amber-300">
+          <!-- 背景グラデーション -->
+          <div class="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50"></div>
+          <!-- キラキラ装飾 -->
+          <div class="absolute top-3 right-4 text-2xl opacity-20 select-none">✨✨</div>
+          <div class="relative p-5">
+            <!-- ヘッダー -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">✨</span>
+              <p class="text-xs font-black text-amber-600 tracking-wider uppercase">TRIPOSからの特別な一押し</p>
+            </div>
+            <!-- エリア名 -->
+            <h3 id="spName" class="text-xl font-black text-navy mb-1"></h3>
+            <p id="spPrefecture" class="text-xs text-gray-500 mb-3"></p>
+            <!-- 所要時間 -->
+            <div id="spDriveTime" class="bg-white/70 rounded-2xl px-4 py-2 mb-3 flex items-center gap-4 text-sm"></div>
+            <!-- パーソナルな理由 -->
+            <div class="bg-white/80 rounded-2xl p-4 mb-3">
+              <p id="spPersonalReason" class="text-sm text-gray-700 leading-relaxed"></p>
+            </div>
+            <!-- 正直な一言 -->
+            <div class="flex items-start gap-2 mb-3">
+              <span class="text-lg mt-0.5">💬</span>
+              <p id="spHonestNote" class="text-sm font-bold text-amber-700 leading-relaxed"></p>
+            </div>
+            <!-- 見どころ -->
+            <div id="spAttractions" class="flex flex-wrap gap-2 mb-4"></div>
+            <!-- CTAボタン -->
+            <a id="spSearchLink" href="#" target="_blank" rel="noopener"
+              class="block w-full bg-amber-400 hover:bg-amber-500 text-white font-black text-center py-3 rounded-2xl transition-colors shadow-md">
+              このエリアで宿を探す →
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- 帰りのエリアカード -->
       <div id="returnSection" class="hidden mb-6">
         <div class="flex items-center gap-3 mb-4">
@@ -836,6 +874,42 @@
         data.areas.forEach((area, i) => {
           container.innerHTML += buildAreaCard(area, i);
         });
+
+        // ✨ 特別提案カード描画
+        const sp = data.special_pick;
+        const spSection = document.getElementById('specialPickSection');
+        if (sp && sp.id) {
+          document.getElementById('spName').textContent = sp.name || '';
+          document.getElementById('spPrefecture').textContent = sp.prefecture || '';
+          // 所要時間
+          const dtFrom = sp.drive_time_from_origin || '';
+          const dtTo   = sp.drive_time_to_dest || '';
+          const via    = sp.highway_via || '';
+          document.getElementById('spDriveTime').innerHTML = dtFrom ? `
+            <div class="flex items-center gap-1.5 flex-1">
+              <span>🚗</span>
+              <div><p class="text-xs text-gray-400">出発地から</p><p class="font-black text-navy text-sm">${dtFrom}</p></div>
+            </div>
+            <div class="text-gray-300 text-lg">→ 泊 →</div>
+            <div class="flex items-center gap-1.5 flex-1 justify-end text-right">
+              <div><p class="text-xs text-gray-400">目的地まで</p><p class="font-black text-navy text-sm">${dtTo || '—'}</p></div>
+              <span>🏠</span>
+            </div>
+          ` : '';
+          document.getElementById('spPersonalReason').textContent = sp.personal_reason || '';
+          document.getElementById('spHonestNote').textContent = sp.honest_note || '';
+          // 見どころタグ
+          const attrEl = document.getElementById('spAttractions');
+          attrEl.innerHTML = (sp.attractions || []).map(a =>
+            `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">${a}</span>`
+          ).join('');
+          // 検索リンク（じゃらん エリア名で検索）
+          document.getElementById('spSearchLink').href =
+            `https://www.jalan.net/yad0/yado_ken/?freeword=${encodeURIComponent(sp.name)}`;
+          spSection.classList.remove('hidden');
+        } else {
+          spSection.classList.add('hidden');
+        }
 
         // 帰りエリアカード描画
         const returnSection = document.getElementById('returnSection');
