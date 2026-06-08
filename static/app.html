@@ -883,26 +883,35 @@
         const db = data.drive_budget;
         const driveBudgetEl = document.getElementById('driveBudgetBanner');
         if (db && driveBudgetEl) {
+          const ob = db.outbound || db; // 旧形式フォールバック
+          const rt = db.return;
+          const budgetRow = (label, d, accent) => `
+            <div class="mb-3">
+              <p class="text-xs font-bold text-gray-500 mb-1">${label}</p>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div class="bg-white rounded-xl p-2">
+                  <p class="text-gray-400">最短ルート</p>
+                  <p class="font-black text-gray-800">${d.shortest_route_h}h</p>
+                </div>
+                <div class="bg-white rounded-xl p-2">
+                  <p class="text-gray-400">2日予算</p>
+                  <p class="font-black text-teal">${d.total_2day_h}h</p>
+                </div>
+                <div class="${accent} rounded-xl p-2">
+                  <p class="${accent.includes('amber') ? 'text-amber-600' : 'text-blue-600'}">余力</p>
+                  <p class="font-black ${accent.includes('amber') ? 'text-amber-700' : 'text-blue-700'}">+${d.spare_capacity_h}h</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">${d.spare_capacity_label || ''}</p>
+            </div>
+          `;
           driveBudgetEl.innerHTML = `
             <div class="flex items-start gap-3">
               <span class="text-2xl">🛣</span>
               <div class="flex-1">
-                <p class="font-black text-navy text-sm mb-1">2日間の走行予算と余力</p>
-                <div class="grid grid-cols-3 gap-2 text-center text-xs mb-2">
-                  <div class="bg-white rounded-xl p-2">
-                    <p class="text-gray-400">最短ルート</p>
-                    <p class="font-black text-gray-800">${db.shortest_route_h}h</p>
-                  </div>
-                  <div class="bg-white rounded-xl p-2">
-                    <p class="text-gray-400">2日予算</p>
-                    <p class="font-black text-teal">${db.total_2day_h}h</p>
-                  </div>
-                  <div class="bg-amber-50 rounded-xl p-2 border border-amber-200">
-                    <p class="text-amber-600">余力</p>
-                    <p class="font-black text-amber-700">+${db.spare_capacity_h}h</p>
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500">${db.spare_capacity_label || ''}</p>
+                <p class="font-black text-navy text-sm mb-2">走行予算と余力</p>
+                ${budgetRow('🌅 行き（余力多め）', ob, 'bg-amber-50 border border-amber-200')}
+                ${rt ? budgetRow('🌙 帰り（疲れ割引80%）', rt, 'bg-blue-50 border border-blue-200') : ''}
               </div>
             </div>
           `;
