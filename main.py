@@ -399,7 +399,31 @@ async def _recommend_inner(req: RecommendRequest):
     if req.group_type != "family":
         family_note = "※子連れではないため、family_scoreは考慮不要。大人向けの観光・グルメ・温泉を重視すること。"
 
+    # 子供の年齢から1日の移動上限を計算
+    def get_daily_drive_limit(children_str: str) -> dict:
+        """子供の最年少年齢から1日の移動上限時間を返す"""
+        if not children_str:
+            return {"max_total_h": 99, "max_drive_h": 99, "note": ""}
+        import re
+        ages = [int(x) for x in re.findall(r'\d+', children_str)]
+        if not ages:
+            return {"max_total_h": 99, "max_drive_h": 99, "note": ""}
+        youngest = min(ages)
+        if youngest <= 1:
+            return {"max_total_h": 6.0,  "max_drive_h": 5.0,   "note": f"最年少{youngest}歳（infant）：1日の移動上限6時間・実走行5時間まで"}
+        elif youngest <= 3:
+            return {"max_total_h": 8.0,  "max_drive_h": 6.75,  "note": f"最年少{youngest}歳（toddler）：1日の移動上限8時間・実走行6時間45分まで"}
+        elif youngest <= 5:
+            return {"max_total_h": 9.0,  "max_drive_h": 7.5,   "note": f"最年少{youngest}歳（preschool）：1日の移動上限9時間・実走行7時間30分まで"}
+        else:
+            return {"max_total_h": 11.0, "max_drive_h": 9.0,   "note": f"最年少{youngest}歳（elementary）：1日の移動上限11時間・実走行9時間まで"}
+
+    drive_limit = get_daily_drive_limit(req.children) if req.group_type == "family" else {"max_total_h": 99, "max_drive_h": 99, "note": ""}
+    drive_limit_note = drive_limit["note"]
+
     weight_note = f"ユーザーの重視度（1〜5）: 子連れ適性={req.weight_family} / コスパ={req.weight_cost} / 温泉={req.weight_onsen}"
+    if drive_limit_note:
+        weight_note += f"\n- {drive_limit_note}"
 
     etc_note = "ETC割引あり（約30〜50%引き）" if req.has_etc else "ETC割引なし"
     cost_note = f"【費用計算】燃費={req.fuel_efficiency}km/L、ガソリン単価=約175円/L、高速料金目安=約25円/km（{etc_note}）。距離を推定して往復のガソリン代・高速代を計算すること。"
@@ -434,10 +458,17 @@ async def _recommend_inner(req: RecommendRequest):
 {json.dumps(areas_summary, ensure_ascii=False, indent=None)}
 
 ## 指示
-1. 出発地→宿泊エリアの所要時間（高速利用）を必ず計算すること（例：出発地から約2時間など）
-2. 宿泊エリア→目的地の残り時間も計算すること
-3. 子供の疲労を考慮した理想的な休憩タイミングを意識すること（2〜3時間ドライブで1泊が理想）
-4. 「人気No.1」ではなく「今のこの家族に最適な狙い目」を選ぶ
+1. **まず出発地→目的地の総所要時間（休憩込み）を計算すること**
+2. 子供がいる場合、年齢別の1日移動上限を厳守すること：
+   - 0〜1歳：実走行5時間・合計6時間まで
+   - 2〜3歳：実走行6時間45分・合計8時間まで（**このケースが最重要**）
+   - 4〜5歳：実走行7時間30分・合計9時間まで
+   - 6歳以上：実走行9時間・合計11時間まで
+3. 宿泊地点は「上限実走行時間の60〜70%走行した地点」を目安にすること（疲れる前に止まる）
+   - 例：2歳・実走行上限6h45m → 約4〜4時間30分走行した地点に泊まる
+   - **全行程の40〜70%地点が目安。80%超は絶対に提案しない**
+4. 宿泊エリア→目的地の残り時間も必ず計算すること
+5. 「人気No.1」ではなく「今のこの家族に最適な狙い目」を選ぶ
 5. 必ず行きの提案を3エリア提案すること
 6. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること
 7. 帰省モードの場合、費用サマリーを計算すること

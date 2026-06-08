@@ -189,16 +189,16 @@
           <div>
             <label class="block text-xs font-bold text-gray-600 mb-2">🚗 旅のタイプ <span class="text-brand">*</span></label>
             <div class="grid grid-cols-2 gap-2">
-              <button type="button" data-mode="normal" onclick="selectMode(this)"
-                class="mode-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-3 text-center text-xs font-bold transition-colors">
-                🗺️ 観光旅行<br/><span class="font-normal text-gray-400">行き先もAIに提案してもらう</span>
-              </button>
               <button type="button" data-mode="kisei" onclick="selectMode(this)"
+                class="mode-btn border-2 border-teal bg-teal/5 text-teal rounded-xl py-3 text-center text-xs font-bold transition-colors">
+                🏠 帰省・長距離<br/><span class="font-normal text-teal/70">中間地点を最適化</span>
+              </button>
+              <button type="button" data-mode="normal" onclick="selectMode(this)"
                 class="mode-btn border-2 border-gray-200 text-gray-600 rounded-xl py-3 text-center text-xs font-bold hover:border-navy hover:text-navy transition-colors">
-                🏠 帰省・長距離<br/><span class="font-normal text-gray-400">中間地点を最適化</span>
+                🗺️ 観光旅行<br/><span class="font-normal text-gray-400">行き先もAIに提案</span>
               </button>
             </div>
-            <input type="hidden" id="mode" value="normal" />
+            <input type="hidden" id="mode" value="kisei" />
           </div>
 
           <!-- 出発地 + 目的地（モードで切り替え） -->
@@ -1160,6 +1160,12 @@
       document.getElementById('errorSection').classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // ページ読み込み時：帰省モードをデフォルト選択
+    (function initDefaultMode() {
+      const kiseiBtn = document.querySelector('[data-mode="kisei"]');
+      if (kiseiBtn) selectMode(kiseiBtn);
+    })();
   </script>
 </body>
 </html>
