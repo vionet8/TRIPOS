@@ -458,6 +458,9 @@
         <p id="costNote" class="text-xs text-white/40 mt-2"></p>
       </div>
 
+      <!-- 余力バナー -->
+      <div id="driveBudgetBanner" class="hidden bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4"></div>
+
       <!-- 行きのエリアカード -->
       <div id="areaCards" class="space-y-4 mb-6"></div>
 
@@ -876,6 +879,36 @@
           document.getElementById('costSummary').classList.add('hidden');
         }
 
+        // 余力バナー描画
+        const db = data.drive_budget;
+        const driveBudgetEl = document.getElementById('driveBudgetBanner');
+        if (db && driveBudgetEl) {
+          driveBudgetEl.innerHTML = `
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">🛣</span>
+              <div class="flex-1">
+                <p class="font-black text-navy text-sm mb-1">2日間の走行予算と余力</p>
+                <div class="grid grid-cols-3 gap-2 text-center text-xs mb-2">
+                  <div class="bg-white rounded-xl p-2">
+                    <p class="text-gray-400">最短ルート</p>
+                    <p class="font-black text-gray-800">${db.shortest_route_h}h</p>
+                  </div>
+                  <div class="bg-white rounded-xl p-2">
+                    <p class="text-gray-400">2日予算</p>
+                    <p class="font-black text-teal">${db.total_2day_h}h</p>
+                  </div>
+                  <div class="bg-amber-50 rounded-xl p-2 border border-amber-200">
+                    <p class="text-amber-600">余力</p>
+                    <p class="font-black text-amber-700">+${db.spare_capacity_h}h</p>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500">${db.spare_capacity_label || ''}</p>
+              </div>
+            </div>
+          `;
+          driveBudgetEl.classList.remove('hidden');
+        }
+
         // 行きエリアカード描画
         const container = document.getElementById('areaCards');
         container.innerHTML = '';
@@ -959,6 +992,17 @@
 
       const wishlistBadge = area.wishlist_match
         ? `<span class="text-xs bg-teal/10 text-teal px-2 py-0.5 rounded-full font-bold">あなたのリストにあります ⭐</span>`
+        : '';
+
+      // 余力帯バッジ
+      const marginBadgeMap = {
+        '余裕◎': { cls: 'bg-emerald-100 text-emerald-700', icon: '◎' },
+        'バランス○': { cls: 'bg-blue-100 text-blue-700', icon: '○' },
+        'ギリギリ△': { cls: 'bg-amber-100 text-amber-700', icon: '△' },
+      };
+      const mb = marginBadgeMap[area.margin_level];
+      const marginBadge = mb
+        ? `<span class="text-xs font-bold px-2 py-0.5 rounded-full ${mb.cls}">${mb.icon} ${area.margin_level}</span>`
         : '';
 
       // 所要時間バー（メイン表示）
