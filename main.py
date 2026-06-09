@@ -484,11 +484,17 @@ async def _recommend_inner(req: RecommendRequest):
 5. 各エリアに `margin_level`（余裕度）を付けること：「余裕◎」「バランス○」「ギリギリ△」
 6. 宿泊エリア→目的地の残り実走行時間も必ず計算すること
 7. 「人気No.1」ではなく「今のこの家族の余力でこそ行ける場所」を選ぶ
-8. 必ず行きの提案を3エリア提案すること
-9. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること
-10. 帰省モードの場合、費用サマリーを計算すること
-11. エリアデータに"detour_from_highway_min"がある場合、迂回時間として参考にすること（帰省モードでは0〜15分のエリアを最優先。30分超は「少し寄り道」と説明に入れること）
-12. highway_icが付いている場合はhighway_viaとして回答に含めること
+8. **魅力度スコアの構成要素を必ず出すこと（scoreはサーバーが計算式で算出するので、breakdownを正確に）**：
+   - popularity（人気度 0〜100）/ satisfaction（満足度 0〜100）/ family_fit（子連れ適性 0〜100）
+   - crowding_penalty（混雑ペナルティ 0〜−30の負数）/ price_surge_penalty（価格高騰ペナルティ 0〜−25の負数）
+   - これらは「この季節・この時期に」その家族にとってどうか、で推定すること（β版のためAI推定値でよい）
+9. **各エリアに `first_day_drive_h` と `second_day_drive_h`（数値・時間）を必ず出すこと**（疲労度スコアの計算に使う）
+10. **各エリアに `value_level`（割安度・β版AI推定）を付けること**：そのエリアの今の宿泊相場が普段比でどうかを「割安」「標準」「割高」のいずれかで。確証がなければ「標準」
+11. 必ず行きの提案を3エリア提案すること
+12. 帰省モードかつ往復の場合、return_areasとして帰りの提案も3エリア提案すること
+13. 帰省モードの場合、費用サマリーを計算すること
+14. エリアデータに"detour_from_highway_min"がある場合、迂回時間として参考にすること（帰省モードでは0〜15分のエリアを最優先。30分超は「少し寄り道」と説明に入れること）
+15. highway_icが付いている場合はhighway_viaとして回答に含めること
 
 ## 特別提案（special_pick）ルール
 通常3エリアとは別に、以下の条件を全て満たす場合のみ special_pick を1件出すこと：
@@ -507,9 +513,10 @@ async def _recommend_inner(req: RecommendRequest):
       "id": "エリアID",
       "name": "エリア名",
       "prefecture": "都道府県",
-      "score": 85,
       "drive_time_from_origin": "約2時間30分",
       "drive_time_to_dest": "約2時間（残り）",
+      "first_day_drive_h": 2.5,
+      "second_day_drive_h": 2.0,
       "highway_via": "東名高速経由",
       "score_breakdown": {{
         "popularity": 70,
@@ -518,6 +525,7 @@ async def _recommend_inner(req: RecommendRequest):
         "crowding_penalty": -20,
         "price_surge_penalty": -10
       }},
+      "value_level": "割安",
       "reason": "このエリアを推す理由（2〜3文、具体的に）",
       "highlight": "一言キャッチ",
       "margin_level": "余裕◎ / バランス○ / ギリギリ△ のいずれか",
@@ -597,6 +605,60 @@ async def _recommend_inner(req: RecommendRequest):
     except Exception as e:
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=f"JSON parse error: {str(e)} / raw: {raw[:200]}")
+
+    # ─────────────────────────────────────────
+    # サーバー側で「魅力度スコア」と「疲労度スコア」を計算
+    # （Claudeの感覚値ではなく、定義した計算式で算出する）
+    # ─────────────────────────────────────────
+    def _num(v, default=0.0):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return default
+
+    def compute_attraction_score(bd: dict) -> int:
+        """魅力度 = 人気度*0.25 + 満足度*0.30 + 子連れ適性*0.45 − 混雑 − 価格高騰
+        （penaltyは負数で渡ってくる）。0〜100にクランプ。"""
+        if not isinstance(bd, dict):
+            return 0
+        base = (_num(bd.get("popularity")) * 0.25
+                + _num(bd.get("satisfaction")) * 0.30
+                + _num(bd.get("family_fit")) * 0.45)
+        penalties = _num(bd.get("crowding_penalty")) + _num(bd.get("price_surge_penalty"))
+        return max(0, min(100, round(base + penalties)))
+
+    def compute_fatigue_score(first_day_h, limit_h: float) -> int:
+        """疲労度 = 1日目実走行 ÷ 年齢別実走行上限 × 100。0〜100にクランプ。
+        低いほど子供に優しい行程。"""
+        first = _num(first_day_h)
+        if limit_h <= 0 or first <= 0:
+            return 0
+        return max(0, min(100, round((first / limit_h) * 100)))
+
+    limit_h = float(drive_limit.get("max_drive_h", 0) or 0)
+    if limit_h >= 99:
+        limit_h = 9.0  # 子供なし等は標準大人ペースで評価
+
+    def enrich(area: dict):
+        if not isinstance(area, dict):
+            return
+        bd = area.get("score_breakdown")
+        if isinstance(bd, dict):
+            area["score"] = compute_attraction_score(bd)
+        area["fatigue_score"] = compute_fatigue_score(area.get("first_day_drive_h"), limit_h)
+        area["fatigue_label"] = (
+            "子供に優しい行程" if area["fatigue_score"] <= 60
+            else "標準的な負担" if area["fatigue_score"] <= 78
+            else "やや頑張る行程"
+        )
+
+    for a in result.get("areas", []) or []:
+        enrich(a)
+    for a in result.get("return_areas", []) or []:
+        enrich(a)
+    sp = result.get("special_pick")
+    if isinstance(sp, dict):
+        enrich(sp)
 
     return result
 
