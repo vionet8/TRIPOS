@@ -588,7 +588,7 @@ async def _recommend_inner(req: RecommendRequest):
     try:
         message = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=4000,
+            max_tokens=8000,
             messages=[{"role": "user", "content": prompt}]
         )
     except Exception as e:
@@ -597,14 +597,23 @@ async def _recommend_inner(req: RecommendRequest):
 
     raw = message.content[0].text.strip()
 
-    # JSON部分を抽出
+    # JSON部分を抽出（コードブロック除去してからパース）
     try:
-        start = raw.find("{")
-        end = raw.rfind("}") + 1
-        result = json.loads(raw[start:end])
+        # ```json ... ``` や ``` ... ``` を取り除く
+        cleaned = raw.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("```", 2)[1]  # 最初の ``` を捨てる
+            if cleaned.startswith("json"):
+                cleaned = cleaned[4:]
+            # 末尾の ``` も捨てる
+            if "```" in cleaned:
+                cleaned = cleaned[:cleaned.rfind("```")]
+        start = cleaned.find("{")
+        end = cleaned.rfind("}") + 1
+        result = json.loads(cleaned[start:end])
     except Exception as e:
         from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=f"JSON parse error: {str(e)} / raw: {raw[:200]}")
+        raise HTTPException(status_code=500, detail=f"JSON parse error: {str(e)} / raw: {raw[:300]}")
 
     # ─────────────────────────────────────────
     # サーバー側で「魅力度スコア」と「疲労度スコア」を計算
